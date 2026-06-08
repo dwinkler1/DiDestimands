@@ -186,8 +186,9 @@ section.on{display:block}
 <!-- ============ TAB 3 ============ -->
 <section id="t3">
   <div class="secblock">
-  <div class="seclab">1 · DGP — Data Generating Process</div>
-  <p class="sectext">The DGP carries over from Tab 1 — the treatment effects, the variance shift, the outcome concentration, and the panel structure are whatever the Tab 1 sliders currently say. This tab layers two additional choices on top, defined with their sliders below; their product is the levels-OLS bias under the multiplicative trend assumed here (an additive trend would bias PPML and log-based estimators instead).</p>
+  <div class="seclab">1 · What changes when baseline levels differ?</div>
+  <p class="sectext">Tab 1 assumed matched treated and control units, so baseline level differences were zero by construction. This closes one potential bias channel: if untreated outcomes follow proportional rather than additive trends, groups that start at different levels will also have different absolute changes. In that case, levels-OLS can attribute part of this mechanical difference to treatment.</p>
+  <p class="sectext">This tab asks what happens when the matched-baseline assumption is relaxed. We keep the Tab 1 DGP fixed, including the treatment effects, variance shift, outcome concentration, and panel structure. We then add two choices, defined by the sliders below: a treated-control baseline gap (b) and common proportional growth (g). Each maps to a factor shown below, and the two multiply to give the levels-OLS bias under the multiplicative trend assumed here. Under an additive trend, the bias would instead appear in PPML and log-based estimators.</p>
   <div class="dgpgrid">
     <div class="leftcol">
       <div class="defctrl">
