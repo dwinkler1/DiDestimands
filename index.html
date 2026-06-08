@@ -172,7 +172,7 @@ section.on{display:block}
 
   <div class="secblock">
   <div class="seclab">3 · Estimator — how to estimate it</div>
-  <p class="sectext">Each estimator targets a different estimand and applies a different implicit or explicit weighting scheme. Log(1+Y) OLS weights observations equally, so the many low-volume units dominate the estimate. Weighted log OLS uses explicit pre-period outcome shares. PPML weights through the predicted mean and is the natural estimator for the population-total percent effect. Levels OLS targets an effect in units of the outcome. When treatment also changes outcome variance, log-transformed specifications can introduce a bias and even reverse sign. <a href="#" onclick="setPreset('homog');return false" style="color:var(--accent);font-weight:600">Setting Δ variance to zero</a> isolates the role of weighting and estimand choice.</p>
+  <p class="sectext">Each estimator targets a different estimand and applies a different implicit or explicit weighting scheme. Log(1+Y) OLS weights observations equally, so the many low-volume units dominate the estimate. Weighted log OLS uses explicit pre-period outcome shares. PPML weights through the predicted mean and is the natural estimator for the population-total percent effect. Levels OLS targets an effect in units of the outcome. When treatment also changes outcome variance, log-transformed specifications can introduce a bias and even reverse sign. <a href="#" onclick="zeroVar();return false" style="color:var(--accent);font-weight:600">Setting Δ variance to zero</a> isolates the role of weighting and estimand choice.</p>
   <div class="charts">
     <div class="chartbox">
       <div class="ttl">Estimated parameters relative to the true DGP estimands</div>
@@ -905,6 +905,12 @@ function setPreset(p){
            homog:{betaHead:-10,betaTail:-10,dDisp1:0}}[p];
   if(!v)return;
   for(const k in v){S[k]=v[k];const el=$(k);if(el){el.value=v[k];paintCtrl(k);}}
+  if(S.tab!=="t1")showTab("t1");else{syncHash();runTab1();}
+}
+function zeroVar(){
+  // keep every current slider; set only the change-in-variance (dDisp1) to zero
+  S.dDisp1=0;
+  const el=$("dDisp1");if(el){el.value=0;paintCtrl("dDisp1");}
   if(S.tab!=="t1")showTab("t1");else{syncHash();runTab1();}
 }
 let lastSim1=null;
