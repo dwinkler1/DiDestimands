@@ -133,7 +133,7 @@ section.on{display:block}
 <section id="t1" class="on">
   <div class="secblock">
   <div class="seclab">1 · Estimand — which effect are we trying to learn?</div>
-  <p class="sectext">This tab shows why the <span class="dfn" data-tip="“We use estimand to refer to what we aim to learn about in the population, and estimator to refer to the sample rule used to estimate it.” — Practitioner’s Companion">estimand</span> has to come before the <span class="dfn" data-tip="“We use estimand to refer to what we aim to learn about in the population, and estimator to refer to the sample rule used to estimate it.” — Practitioner’s Companion">estimator</span>. The same DiD design can answer different economic questions depending on whether the target is the typical unit, the population total, or a level effect. With heavy-tailed outcomes, these estimands can differ sharply, and sometimes even imply effects with opposite signs. Use the sliders below to change the data-generating process and see how the true estimands and the estimated coefficients move.</p>
+  <p class="sectext">This tab shows why the <span class="dfn" data-tip="We use “estimand” to refer to what we aim to learn about in the population, and “estimator” to refer to the sample rule used to estimate it.">estimand</span> has to come before the <span class="dfn" data-tip="We use “estimand” to refer to what we aim to learn about in the population, and “estimator” to refer to the sample rule used to estimate it.">estimator</span>. The same DiD design can answer different economic questions depending on whether the target is the typical unit, the population total, or a level effect. With heavy-tailed outcomes, these estimands can differ sharply, and sometimes even imply effects with opposite signs. Use the sliders below to change the data-generating process and see how the true estimands and the estimated coefficients move.</p>
   <div class="estgrid">
     <div class="estcard"><div class="en">Typical-unit %</div><div class="ef">ΔΔ E[log Y]</div>
       <div class="ed">Percent change in outcome for a representative unit, where each unit contributes equally, regardless of its size.</div>
@@ -1142,7 +1142,7 @@ for(const id in SLIDERS){
   el.addEventListener("input",()=>{S[id]=+el.value;paintCtrl(id);
     if(S.tab==="t3"&&(id==="gap3"||id==="growth3")){syncHash();runTab3();}else queueRun();});
 }
-$("nUnits").addEventListener("change",()=>{S.nUnits=Math.max(100,Math.min(2000,+$("nUnits").value||800));queueRun();});
+$("nUnits").addEventListener("change",()=>{S.nUnits=Math.max(100,Math.min(2000,+$("nUnits").value||800));$("nUnits").value=S.nUnits;queueRun();});
 $("seed").addEventListener("change",()=>{S.seed=+$("seed").value||1;queueRun();});
 $("reroll").addEventListener("click",()=>{S.seed=Math.floor(Math.random()*100000);$("seed").value=S.seed;syncHash();runActive();});
 $("copylink").addEventListener("click",()=>{
