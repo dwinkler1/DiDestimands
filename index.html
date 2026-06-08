@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choosing a DiD Estimand and Estimator for Heavy-Tailed Outcomes</title>
+<style>
+:root{
+  --bg:#faf9f7; --panel:#fff; --ink:#1a1a1a; --muted:#6b6b6b; --line:#e3e0da;
+  --accent:#0f4c5c; --red:#B31B1B; /* Cornell red = truth; teal = interface */
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 Georgia,"Times New Roman",serif;background:var(--bg);color:var(--ink)}
+header{padding:16px 28px 0;background:var(--panel);border-bottom:1px solid var(--line)}
+.titlerow{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:4px}
+header h1{font-size:23px;margin:0 0 2px;font-weight:600;letter-spacing:.2px;line-height:1.25}
+header h1 .ht{color:var(--accent);font-style:italic}
+.hdrdist{flex:none;width:170px;height:58px;margin-bottom:2px}
+header p a{color:var(--accent);font-weight:600;text-decoration:none;border-bottom:1px solid var(--line)}
+header p a:hover{border-color:var(--accent)}
+@media(max-width:820px){.hdrdist{display:none}}
+header h1 .bD{color:var(--red);font-weight:700}
+header h1 .bi{color:var(--accent);font-style:italic;font-weight:700}
+header h1 .bSep{display:inline-block;width:10px}
+header h1 .bRest{color:var(--ink)}
+header h1 .bLab{color:var(--accent);font-style:italic}
+header p{margin:0 0 12px;color:var(--muted);font-size:13px;text-align:center}
+.tabs{display:flex;gap:4px;justify-content:center}
+.tabs button{font:13.5px Georgia;padding:9px 16px;border:1px solid var(--line);border-bottom:none;background:#f1efe9;border-radius:8px 8px 0 0;cursor:pointer;color:#444}
+.tabs button.on{background:var(--bg);font-weight:600;color:var(--ink);position:relative;top:1px}
+.footerbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:28px;padding-top:14px;font-size:12.5px;color:var(--muted)}
+.footerbar input{width:62px;font:12.5px Georgia;padding:3px 5px;border:1px solid var(--line);border-radius:4px}
+.footerbar button{font:12.5px Georgia;padding:4px 10px;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer}
+main{max-width:1060px;margin:0 auto;padding:18px 28px 60px}
+.ctrl{min-width:150px;flex:1;max-width:230px}
+.ctrl label{display:flex;justify-content:space-between;font-size:12px;color:#333;margin-bottom:1px}
+.ctrl label b{font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums;min-width:54px;text-align:right;white-space:nowrap}
+.ctrl input[type=range]{width:100%;accent-color:var(--accent);height:18px;margin:0}
+.seclab{color:var(--red);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border-bottom:2px solid var(--red);display:inline-block;padding:0 2px 2px 0;margin:18px 0 8px}
+.secblock:first-of-type .seclab{margin-top:2px}
+.sectext{font-size:14.5px;color:#333;margin:0 0 12px;max-width:980px}
+.estgrid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.presets{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.presets .plab{font-size:11.5px;color:var(--muted);margin-right:2px}
+.presets button{font:12px Georgia;padding:3px 10px;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer;color:#333}
+.presets button:hover{border-color:var(--red);color:var(--red)}
+.kpihead{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin:0 0 -2px 2px}
+.dfn{border-bottom:1px dotted #777;cursor:help;position:relative}
+.dfn:hover::after{content:attr(data-tip);position:absolute;left:0;bottom:1.5em;width:330px;background:#1f2430;color:#f2f0ec;font-size:12.5px;line-height:1.45;padding:9px 11px;border-radius:7px;z-index:90;font-weight:400}
+.litgrid{display:flex;gap:12px;flex-wrap:wrap}
+.litcard{flex:1 1 30%;min-width:300px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:8px;padding:12px 14px}
+.litcard .la{font-weight:700;font-size:13.5px}
+.litcard .la a{color:inherit;text-decoration:none;border-bottom:1px dotted #999}
+.litcard .lv{font-size:11.5px;color:var(--muted);margin:1px 0 6px}
+.litcard .ls{font-size:13px;color:#333}
+.estcard{flex:1;min-width:230px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.estcard .en{color:var(--red);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.estcard .ef{font-style:italic;margin:3px 0 4px;color:#1a1a1a}
+.estcard .ed{font-size:12.5px;color:#333;margin:0 0 5px}
+.estcard .eq{color:var(--muted);font-size:12.5px;font-style:italic}
+.dgpgrid{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px;align-items:stretch}
+.eqcard{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:center;flex:1;min-width:330px;max-width:560px;flex-wrap:wrap;gap:2px}
+.eqitem{text-align:center;padding:0 8px}
+.eqitem .ev{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.eqitem .el{font-size:11px;color:var(--muted);line-height:1.3;margin-top:2px}
+.eqop{font-size:20px;font-weight:600;color:#444}
+.eqcol{display:flex;flex-direction:column;align-items:center}
+.eqhdr{font-size:13.5px;color:#444;margin-bottom:1px}
+.eqrow{display:flex;align-items:center;justify-content:center;gap:2px}
+.eqcol .eqitem{width:108px;padding:0}
+.defctrl{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px 12px}
+.defctrl .defhead{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.defctrl .defhead .bg{color:var(--red);font-weight:700;font-style:italic;font-size:15px}
+.defctrl .defhead b.val{color:var(--accent);font-variant-numeric:tabular-nums;min-width:54px;text-align:right}
+.defctrl .defsub{font-size:11px;color:var(--muted);line-height:1.35;margin:2px 0 7px}
+.defctrl input[type=range]{width:100%;accent-color:var(--accent);height:18px;margin:0}
+.leftcol{width:330px;flex:none;display:flex;flex-direction:column;gap:12px;justify-content:space-between}
+.leftcol .eqcard{min-width:0;max-width:none;padding:10px 6px;flex:none}
+.leftcol .eqcard .ev,.leftcol .kpi .v{font-size:18px}
+.ctrlcol{width:300px;flex:none;display:flex;flex-direction:column;gap:13px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+.ctrlcol .ctrl{max-width:none;min-width:0}
+.kpicol{width:250px;flex:none;display:flex;flex-direction:column;gap:12px}
+.kpicol .kpi{flex:none}
+.charts{display:flex;gap:14px;flex-wrap:wrap}
+.chartbox{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 6px 2px;position:relative;flex:1;min-width:420px}
+.chartbox .ttl{font-size:12.5px;font-weight:600;padding:2px 12px 0}
+.chartbox .cap{font-size:12.5px;color:var(--muted);padding:4px 12px 8px}
+.kpi{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.kpi .t{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:11px;color:var(--muted)}
+.replrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 2px}
+.rbtn{font:13px Georgia;padding:7px 14px;border-radius:6px;text-decoration:none;background:var(--accent);color:#fff;border:1px solid var(--accent)}
+.rbtn.sec{background:#fff;color:var(--accent);border:1px solid var(--line)}
+.rbtn.sec:hover{border-color:var(--accent)}
+.rnote{font-size:12px;color:var(--muted);margin-left:4px}
+.codewrap{position:relative;margin:0 0 18px}
+.codebox{background:#1f2430;color:#e8e6e1;font:12px/1.5 "SF Mono",Menlo,Consolas,monospace;border-radius:8px;padding:14px 16px;max-height:480px;overflow:auto;white-space:pre}
+.copybtn{position:absolute;top:8px;right:10px;font:12px Georgia;padding:4px 10px;border-radius:5px;border:1px solid #555;background:#2b3140;color:#e8e6e1;cursor:pointer}
+.dlbtn{display:inline-block;min-width:118px;text-align:center;font:12px Georgia;padding:4px 10px;margin-right:12px;border-radius:5px;border:1px solid var(--red);background:var(--red);color:#fff;cursor:pointer;white-space:nowrap}
+.codehead{font-size:13px;font-weight:600;margin:14px 0 6px}
+details{margin-top:20px;font-size:12.5px;color:#444}
+details summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.axislab{font:12.5px Georgia;fill:#111}
+#heat3{cursor:crosshair}
+section{display:none}
+#t1{max-width:984px;margin:0 auto}
+section.on{display:block}
+@media(max-width:760px){.chartbox{min-width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div class="titlerow">
+  <svg class="hdrdist" viewBox="0 0 170 58" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M 46.5 51 L 46.5 32.9 L 47.3 33.4 L 48.1 34.0 L 48.9 34.5 L 49.7 35.0 L 50.6 35.5 L 51.4 35.9 L 52.2 36.4 L 53.0 36.8 L 53.8 37.2 L 54.7 37.6 L 55.5 38.0 L 56.3 38.4 L 57.1 38.8 L 57.9 39.1 L 58.8 39.5 L 59.6 39.8 L 60.4 40.1 L 61.2 40.4 L 62.0 40.7 L 62.9 41.0 L 63.7 41.3 L 64.5 41.6 L 65.3 41.8 L 66.1 42.1 L 67.0 42.3 L 67.8 42.6 L 68.6 42.8 L 69.4 43.0 L 70.2 43.2 L 71.1 43.4 L 71.9 43.7 L 72.7 43.8 L 73.5 44.0 L 74.3 44.2 L 75.2 44.4 L 76.0 44.6 L 76.8 44.7 L 77.6 44.9 L 78.4 45.1 L 79.3 45.2 L 80.1 45.4 L 80.9 45.5 L 81.7 45.6 L 82.5 45.8 L 83.4 45.9 L 84.2 46.0 L 85.0 46.2 L 85.8 46.3 L 86.6 46.4 L 87.5 46.5 L 88.3 46.6 L 89.1 46.7 L 89.9 46.8 L 90.7 46.9 L 91.6 47.0 L 92.4 47.1 L 93.2 47.2 L 94.0 47.3 L 94.8 47.4 L 95.7 47.5 L 96.5 47.6 L 97.3 47.6 L 98.1 47.7 L 98.9 47.8 L 99.8 47.9 L 100.6 47.9 L 101.4 48.0 L 102.2 48.1 L 103.0 48.1 L 103.9 48.2 L 104.7 48.3 L 105.5 48.3 L 106.3 48.4 L 107.1 48.5 L 108.0 48.5 L 108.8 48.6 L 109.6 48.6 L 110.4 48.7 L 111.2 48.7 L 112.1 48.8 L 112.9 48.8 L 113.7 48.9 L 114.5 48.9 L 115.3 49.0 L 116.2 49.0 L 117.0 49.0 L 117.8 49.1 L 118.6 49.1 L 119.4 49.2 L 120.3 49.2 L 121.1 49.2 L 121.9 49.3 L 122.7 49.3 L 123.5 49.3 L 124.4 49.4 L 125.2 49.4 L 126.0 49.4 L 126.8 49.5 L 127.6 49.5 L 128.5 49.5 L 129.3 49.6 L 130.1 49.6 L 130.9 49.6 L 131.7 49.7 L 132.6 49.7 L 133.4 49.7 L 134.2 49.7 L 135.0 49.8 L 135.8 49.8 L 136.7 49.8 L 137.5 49.8 L 138.3 49.8 L 139.1 49.9 L 139.9 49.9 L 140.8 49.9 L 141.6 49.9 L 142.4 50.0 L 143.2 50.0 L 144.0 50.0 L 144.9 50.0 L 145.7 50.0 L 146.5 50.0 L 147.3 50.1 L 148.1 50.1 L 149.0 50.1 L 149.8 50.1 L 150.6 50.1 L 151.4 50.2 L 152.2 50.2 L 153.1 50.2 L 153.9 50.2 L 154.7 50.2 L 155.5 50.2 L 156.3 50.2 L 157.2 50.3 L 158.0 50.3 L 158.8 50.3 L 159.6 50.3 L 160.4 50.3 L 161.3 50.3 L 162.1 50.3 L 162.9 50.3 L 163.7 50.4 L 164.5 50.4 L 165.4 50.4 L 166.2 50.4 L 167.0 50.4 L 167.0 51 Z" fill="#B31B1B" opacity="0.8"/>
+    <path d="M 3.8 50.8 L 4.6 48.7 L 5.5 44.3 L 6.3 38.6 L 7.1 32.5 L 7.9 26.7 L 8.7 21.5 L 9.6 17.0 L 10.4 13.2 L 11.2 10.1 L 12.0 7.7 L 12.8 5.9 L 13.7 4.6 L 14.5 3.7 L 15.3 3.2 L 16.1 3.0 L 16.9 3.1 L 17.8 3.4 L 18.6 3.8 L 19.4 4.5 L 20.2 5.2 L 21.0 6.0 L 21.9 6.9 L 22.7 7.9 L 23.5 8.9 L 24.3 9.9 L 25.1 11.0 L 26.0 12.0 L 26.8 13.1 L 27.6 14.1 L 28.4 15.2 L 29.2 16.2 L 30.1 17.2 L 30.9 18.2 L 31.7 19.2 L 32.5 20.2 L 33.3 21.1 L 34.2 22.0 L 35.0 22.9 L 35.8 23.8 L 36.6 24.6 L 37.4 25.4 L 38.3 26.2 L 39.1 27.0 L 39.9 27.7 L 40.7 28.4 L 41.5 29.1 L 42.4 29.8 L 43.2 30.5 L 44.0 31.1 L 44.8 31.7 L 45.6 32.3 L 46.5 32.9 L 47.3 33.4 L 48.1 34.0 L 48.9 34.5 L 49.7 35.0 L 50.6 35.5 L 51.4 35.9 L 52.2 36.4 L 53.0 36.8 L 53.8 37.2 L 54.7 37.6 L 55.5 38.0 L 56.3 38.4 L 57.1 38.8 L 57.9 39.1 L 58.8 39.5 L 59.6 39.8 L 60.4 40.1 L 61.2 40.4 L 62.0 40.7 L 62.9 41.0 L 63.7 41.3 L 64.5 41.6 L 65.3 41.8 L 66.1 42.1 L 67.0 42.3 L 67.8 42.6 L 68.6 42.8 L 69.4 43.0 L 70.2 43.2 L 71.1 43.4 L 71.9 43.7 L 72.7 43.8 L 73.5 44.0 L 74.3 44.2 L 75.2 44.4 L 76.0 44.6 L 76.8 44.7 L 77.6 44.9 L 78.4 45.1 L 79.3 45.2 L 80.1 45.4 L 80.9 45.5 L 81.7 45.6 L 82.5 45.8 L 83.4 45.9 L 84.2 46.0 L 85.0 46.2 L 85.8 46.3 L 86.6 46.4 L 87.5 46.5 L 88.3 46.6 L 89.1 46.7 L 89.9 46.8 L 90.7 46.9 L 91.6 47.0 L 92.4 47.1 L 93.2 47.2 L 94.0 47.3 L 94.8 47.4 L 95.7 47.5 L 96.5 47.6 L 97.3 47.6 L 98.1 47.7 L 98.9 47.8 L 99.8 47.9 L 100.6 47.9 L 101.4 48.0 L 102.2 48.1 L 103.0 48.1 L 103.9 48.2 L 104.7 48.3 L 105.5 48.3 L 106.3 48.4 L 107.1 48.5 L 108.0 48.5 L 108.8 48.6 L 109.6 48.6 L 110.4 48.7 L 111.2 48.7 L 112.1 48.8 L 112.9 48.8 L 113.7 48.9 L 114.5 48.9 L 115.3 49.0 L 116.2 49.0 L 117.0 49.0 L 117.8 49.1 L 118.6 49.1 L 119.4 49.2 L 120.3 49.2 L 121.1 49.2 L 121.9 49.3 L 122.7 49.3 L 123.5 49.3 L 124.4 49.4 L 125.2 49.4 L 126.0 49.4 L 126.8 49.5 L 127.6 49.5 L 128.5 49.5 L 129.3 49.6 L 130.1 49.6 L 130.9 49.6 L 131.7 49.7 L 132.6 49.7 L 133.4 49.7 L 134.2 49.7 L 135.0 49.8 L 135.8 49.8 L 136.7 49.8 L 137.5 49.8 L 138.3 49.8 L 139.1 49.9 L 139.9 49.9 L 140.8 49.9 L 141.6 49.9 L 142.4 50.0 L 143.2 50.0 L 144.0 50.0 L 144.9 50.0 L 145.7 50.0 L 146.5 50.0 L 147.3 50.1 L 148.1 50.1 L 149.0 50.1 L 149.8 50.1 L 150.6 50.1 L 151.4 50.2 L 152.2 50.2 L 153.1 50.2 L 153.9 50.2 L 154.7 50.2 L 155.5 50.2 L 156.3 50.2 L 157.2 50.3 L 158.0 50.3 L 158.8 50.3 L 159.6 50.3 L 160.4 50.3 L 161.3 50.3 L 162.1 50.3 L 162.9 50.3 L 163.7 50.4 L 164.5 50.4 L 165.4 50.4 L 166.2 50.4 L 167.0 50.4" fill="none" stroke="#555" stroke-width="1.8"/>
+    <line x1="3" x2="167" y1="51" y2="51" stroke="#c9c4bb" stroke-width="1"/>
+  </svg>
+  <h1>Choosing a <span class="bD">D</span><span class="bi">i</span><span class="bD">D</span> estimand and estimator<br>for <span class="ht">heavy-tailed</span> outcomes</h1>
+  </div>
+  <p>Interactive companion to <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552" target="_blank" rel="noopener">Winkler, Hotz-Behofsits, Wlömert, Papies &amp; Liaukonytė (2026)</a> and its <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6813701" target="_blank" rel="noopener">Practitioner’s Companion</a>.</p>
+  <div class="tabs">
+    <button data-tab="t1" class="on">1 · Estimands &amp; Estimators</button>
+    <button data-tab="t3">2 · Levels-OLS bias map</button>
+    <button data-tab="tlit">3 · Related literature</button>
+    <button data-tab="trep">4 · Replication package</button>
+  </div>
+</header>
+<main>
+
+<!-- ============ TAB 1 ============ -->
+<section id="t1" class="on">
+  <div class="secblock">
+  <div class="seclab">1 · Estimand — which effect are we trying to learn?</div>
+  <p class="sectext">This tab shows why the <span class="dfn" data-tip="“We use estimand to refer to what we aim to learn about in the population, and estimator to refer to the sample rule used to estimate it.” — Practitioner’s Companion">estimand</span> has to come before the <span class="dfn" data-tip="“We use estimand to refer to what we aim to learn about in the population, and estimator to refer to the sample rule used to estimate it.” — Practitioner’s Companion">estimator</span>. The same DiD design can answer different economic questions depending on whether the target is the typical unit, the population total, or a level effect. With heavy-tailed outcomes, these estimands can differ sharply, and sometimes even imply effects with opposite signs. Use the sliders below to change the data-generating process and see how the true estimands and the estimated coefficients move.</p>
+  <div class="estgrid">
+    <div class="estcard"><div class="en">Typical-unit %</div><div class="ef">ΔΔ E[log Y]</div>
+      <div class="ed">Percent change in outcome for a representative unit, where each unit contributes equally, regardless of its size.</div>
+      <div class="eq">“Did per-unit usage rise by ~5%?”</div></div>
+    <div class="estcard"><div class="en">Population-total %</div><div class="ef">ΔΔ log E[Y]</div>
+      <div class="ed">Percent change in the mean of Y — the economically relevant margin under heavy-tailed outcomes.</div>
+      <div class="eq">“Did total revenue rise by ~5%?”</div></div>
+    <div class="estcard"><div class="en">Level effect</div><div class="ef">ΔΔ E[Y]</div>
+      <div class="ed">Absolute change in units of Y; the average change per unit equals the change in the mean.</div>
+      <div class="eq">“Did this add ~$2M of revenue?”</div></div>
+  </div>
+  </div>
+
+  <div class="secblock">
+  <div class="seclab">2 · DGP — Data Generating Process</div>
+  <p class="sectext">The simulation creates a matched treated–control panel that simplifies the setting for educational purposes, isolating three ingredients: outcome concentration (the share of outcomes in the top decile), heterogeneous treatment effects (separate effects for the viral head and the long tail), and treatment-induced changes in variance (the proportional change in treated-unit volatility). Treated and control units have the same pre-period baseline levels by construction, so differences across estimators come from the estimand they target and how they weight the outcome distribution. For the case where treated and control units start at different levels, see the <a href="#" onclick="showTab('t3');return false" style="color:var(--accent);font-weight:600">Levels-OLS bias map tab →</a></p>
+  <div class="dgpgrid">
+    <div class="ctrlcol">
+      <div class="ctrl"><label>% of outcome in top decile <b id="v_topShare"></b></label><input type="range" id="topShare" min="10" max="99" step="1" value="76"></div>
+      <div class="ctrl"><label>True effect, head (top decile) <b id="v_betaHead"></b></label><input type="range" id="betaHead" min="-20" max="20" step="1" value="-5"></div>
+      <div class="ctrl"><label>True effect, tail (bottom 90%) <b id="v_betaTail"></b></label><input type="range" id="betaTail" min="-20" max="20" step="0.5" value="0"></div>
+      <div class="ctrl"><label>Δ variance due to treatment <b id="v_dDisp1"></b></label><input type="range" id="dDisp1" min="-0.75" max="0.75" step="0.05" value="-0.35"></div>
+      <div class="presets"><span class="plab">Presets:</span><button onclick="setPreset('default')">Defaults</button><button onclick="setPreset('null')">Null effect</button><button onclick="setPreset('varonly')">Δ variance only</button><button onclick="setPreset('homog')">Homogeneous effect</button></div>
+    </div>
+    <div class="chartbox" style="min-width:min(340px,100%)"><div class="ttl">Where the population total comes from<br>(pre-treatment distribution)</div>
+      <svg id="dec1" width="100%" viewBox="0 0 360 240" preserveAspectRatio="xMidYMid meet" style="height:auto;display:block"></svg>
+    </div>
+    <div class="kpicol">
+      <div class="kpihead">True estimand values</div>
+      <div class="kpi"><div class="t">True typical-unit % effect</div><div class="v" id="truthTyp">—</div><div class="s">equal-weighted percent change across units</div></div>
+      <div class="kpi"><div class="t">True population-total % effect</div><div class="v" id="truthAgg">—</div><div class="s">percent change in total treated outcomes</div></div>
+      <div class="kpi"><div class="t">Realized top-decile share</div><div class="v" id="topShareKpi">—</div><div class="s">pre-treatment top-decile share in this simulation draw</div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="secblock">
+  <div class="seclab">3 · Estimator — how to estimate it</div>
+  <p class="sectext">Each estimator targets a different estimand and applies a different implicit or explicit weighting scheme. Log(1+Y) OLS weights observations equally, so the many low-volume units dominate the estimate. Weighted log OLS uses explicit pre-period outcome shares. PPML weights through the predicted mean and is the natural estimator for the population-total percent effect. Levels OLS targets an effect in units of the outcome. When treatment also changes outcome variance, log-transformed specifications can introduce a bias and even reverse sign. <a href="#" onclick="setPreset('homog');return false" style="color:var(--accent);font-weight:600">Setting Δ variance to zero</a> isolates the role of weighting and estimand choice.</p>
+  <div class="charts">
+    <div class="chartbox">
+      <div class="ttl">Estimated parameters relative to the true DGP estimands</div>
+      <svg id="box1reg" width="100%" height="330" viewBox="0 0 640 330" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="cap">Red lines show true DGP effects: solid for the population-total and dashed for the typical-unit. The black line is the point estimate from the corresponding regression, the box spans ±1 standard error (SE), and the whiskers span the 95% confidence interval (CI), clustered by matched pair. Levels OLS is reported as a percent of the treated pre-period mean, with its SE and CI scaled by the delta method.</div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<!-- ============ TAB 3 ============ -->
+<section id="t3">
+  <div class="secblock">
+  <div class="seclab">1 · DGP — Data Generating Process</div>
+  <p class="sectext">The DGP carries over from Tab 1 — the treatment effects, the variance shift, the outcome concentration, and the panel structure are whatever the Tab 1 sliders currently say. This tab layers two additional choices on top, defined with their sliders below; their product is the levels-OLS bias.</p>
+  <div class="dgpgrid">
+    <div class="leftcol">
+      <div class="defctrl">
+        <div class="defhead"><span><span class="bg">b</span> — <b>baseline levels gap</b></span><b class="val" id="v_gap3"></b></div>
+        <div class="defsub">treated units start higher or lower than controls; matching on levels is switched off</div>
+        <input type="range" id="gap3" min="-75" max="75" step="5" value="15">
+      </div>
+      <div class="defctrl">
+        <div class="defhead"><span><span class="bg">g</span> — <b>common growth</b></span><b class="val" id="v_growth3"></b></div>
+        <div class="defsub">all units share the same proportional growth rate per period</div>
+        <input type="range" id="growth3" min="-5" max="5" step="0.25" value="2">
+      </div>
+      <div class="eqcard">
+        <div class="eqcol">
+          <div class="eqhdr"><span class="bg" style="color:var(--red);font-weight:700;font-style:italic;font-size:15px">b</span> &nbsp;×&nbsp; <span class="bg" style="color:var(--red);font-weight:700;font-style:italic;font-size:15px">g</span></div>
+          <div class="eqrow">
+            <div class="eqitem"><div class="ev" id="kFactGap">—</div><div class="el">gap factor b/(1+b)</div></div>
+            <div class="eqop">×</div>
+            <div class="eqitem"><div class="ev" id="kFactGrow">—</div><div class="el">trend-scale factor</div></div>
+          </div>
+        </div>
+        <div class="eqop">=</div>
+        <div class="eqitem"><div class="ev" id="kBias" style="color:var(--red)">—</div><div class="el" style="color:var(--red)">predicted levels-OLS bias</div></div>
+      </div>
+      <div class="kpi" style="flex:none;text-align:center"><div class="t">True population-total % effect</div><div class="v" id="kTruthAgg3" style="color:var(--red)">—</div><div class="s">from Tab 1’s DGP; the bias adds on top of this</div></div>
+    </div>
+    <div class="chartbox" style="min-width:min(560px,100%)"><div class="ttl">Bias component of levels OLS (% of counterfactual mean)</div>
+      <svg id="heat3" width="100%" height="380" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="cap"><b>Click or drag anywhere on the map to move ✕</b> — the sliders follow, and the simulated check below re-runs when you release. The white bands are zero bias: the entire <i>b</i> = 0 column and <i>g</i> = 0 row.</div>
+    </div>
+  </div>
+  </div>
+
+  <div class="secblock">
+  <div class="seclab">2 · Building intuition — why the two parameters multiply</div>
+  <div class="chartbox" style="margin-top:4px"><div class="ttl">Intuition for how the bias arises. Treatment effect set = 0 for instructional purposes.<br>Move the <i>b</i> and <i>g</i> sliders (or drag the ✕) to see how the bias changes.</div>
+    <svg id="traj3" width="100%" height="250" viewBox="0 0 720 250" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="cap">Both paths assume the treatment has no effect. In levels they diverge, so a levels DiD attributes the shaded area to the treatment effect. The shaded gap, as a fraction of the treated line’s height at the final period, equals the predicted levels-OLS bias in the box above. In logs the same paths are parallel, so log and PPML are unaffected. Move the <i>b</i> and <i>g</i> sliders (or drag the ✕) — the area changes, and vanishes whenever either is zero. This is a simplified case; the simulation below adds your Tab 1 treatment effect on top.</div>
+  </div>
+  <p class="sectext">Under common proportional growth <i>g</i>, absolute changes scale with baseline levels: a treated unit (1+<i>b</i>) times larger mechanically adds (1+<i>b</i>) times more under the no-treatment counterfactual, and a levels DiD attributes the difference to treatment. With balanced windows the bias is exactly [<i>b</i>/(1+<i>b</i>)] × [(Ḡ<sub>post</sub> − Ḡ<sub>pre</sub>)/Ḡ<sub>post</sub>], with Ḡ the window-average growth factor; in this 10+10 design the trend-scale factor is 1 − (1+<i>g</i>)<sup>−10</sup>. Either parameter at zero closes the channel: matching on baseline levels shrinks <i>b</i> toward zero, and no common growth means no trend-scale factor. The bias is separate from the treatment effect and adds to the scaled levels estimate. Proportional estimators (PPML, log specifications) impose proportional counterfactual trends and carry no bias from this channel. See <a href="#" onclick="showTab('tlit');return false" style="color:var(--accent);font-weight:600">Roth &amp; Sant’Anna (2023)</a> on when parallel trends is sensitive to functional form.</p>
+  </div>
+
+  <div class="secblock">
+  <div class="seclab">3 · Estimator behavior</div>
+  <div class="charts">
+    <div class="chartbox">
+      <div class="ttl">Simulated check at ✕, with Tab 1’s treatment effects</div>
+      <svg id="box3" width="100%" height="360" viewBox="0 0 720 360" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="cap">The solid red line is the true population-total estimand from Tab 1’s DGP; the dark dashed line is the levels-OLS estimate from this simulated dataset. The red shaded band shows the realized bias, the distance between the truth and the estimate. The equation card above gives the predicted bias, so any difference between the two reflects sampling noise. The black line is the point estimate from the corresponding regression, the box spans ±1 standard error (SE), and the whiskers show the 95% confidence interval (CI), clustered by matched pair. Levels OLS is reported as a percent of the counterfactual mean, with the SE and CI scaled by the delta method.</div>
+    </div>
+  </div>
+  </div>
+
+</section>
+
+
+<!-- ============ TAB LIT ============ -->
+<section id="tlit">
+  <div class="secblock">
+  <div class="seclab">Related literature</div>
+  <div class="litgrid">
+    <div class="litcard"><div class="la"><a href="https://doi.org/10.3982/ECTA19402" target="_blank" rel="noopener">Roth &amp; Sant’Anna (2023)</a></div>
+      <div class="lv">Econometrica · “When Is Parallel Trends Sensitive to Functional Form?”</div>
+      <div class="ls">Parallel trends can hold in levels but fail in logs, or the reverse — so the estimate depends on the chosen transformation. The premise behind the Levels-OLS bias map.</div></div>
+    <div class="litcard"><div class="la"><a href="https://doi.org/10.1162/rest.88.4.641" target="_blank" rel="noopener">Santos Silva &amp; Tenreyro (2006)</a></div>
+      <div class="lv">Review of Economics and Statistics · “The Log of Gravity”</div>
+      <div class="ls">When the error variance depends on the mean, log-linear OLS is biased for percent effects on the mean; PPML is not. Why PPML anchors the population-total % here.</div></div>
+    <div class="litcard"><div class="la"><a href="https://doi.org/10.1093/qje/qjad054" target="_blank" rel="noopener">Chen &amp; Roth (2024)</a></div>
+      <div class="lv">Quarterly Journal of Economics · “Logs with Zeros? Some Problems and Solutions”</div>
+      <div class="ls">With zeros, log(1+Y) effects depend on the units of Y and have no clean percent interpretation. Here zeros are rare and treatment barely moves them, so log(1+Y) remains a practical typical-unit summary.</div></div>
+    <div class="litcard"><div class="la"><a href="https://doi.org/10.1515/jem-2016-0011" target="_blank" rel="noopener">Ciani &amp; Fisher (2019)</a></div>
+      <div class="lv">Journal of Econometric Methods · “Dif-in-Dif Estimators of Multiplicative Treatment Effects”</div>
+      <div class="ls">If treatment changes the outcome’s variance, log-transformed DiD picks up the variance change on top of the mean effect — the Δ-variance slider channel on Tab 1.</div></div>
+    <div class="litcard"><div class="la"><a href="https://arxiv.org/abs/2308.00167" target="_blank" rel="noopener">McConnell (2024)</a></div>
+      <div class="lv">Working paper · “On the Perils of Log Dependent Variables and Difference-in-Differences”</div>
+      <div class="ls">With baseline level differences between groups and a common trend, log DiD can flip the sign of a levels DiD; gives the condition for the flip. The b × g logic of Tab 2, in log form.</div></div>
+    <div class="litcard"><div class="la"><a href="https://doi.org/10.1093/ectj/utad016" target="_blank" rel="noopener">Wooldridge (2023)</a></div>
+      <div class="lv">The Econometrics Journal · “Simple Approaches to Nonlinear Difference-in-Differences with Panel Data”</div>
+      <div class="ls">Poisson regression with two-way fixed effects identifies the treatment effect under an exponential-mean model. The PPML specification used throughout this companion.</div></div>
+  </div>
+  </div>
+</section>
+
+
+<!-- ============ TAB REPLICATION ============ -->
+<section id="trep">
+  <div class="secblock">
+  <div class="seclab">1 · What these scripts replicate</div>
+  <p class="sectext">The applet generates the data; the scripts estimate. The buttons below export the simulated panel for the current slider settings as a CSV file, and each code below (Python, R, and Julia) reads that file, runs the four specifications from Tabs 1 and 2, and prints estimates with confidence intervals. A reference panel for the default settings is bundled in the zip, and every script includes reference values for it, so you can verify your setup before swapping in your own export.</p>
+  </div>
+  <div class="secblock">
+  <div class="seclab">2 · Download</div>
+  <div class="replrow">
+    <a class="rbtn" href="#" onclick="downloadPanel(false);return false">&#8595;&nbsp;Panel (CSV) — Tab 1 settings</a>
+    <a class="rbtn" href="#" onclick="downloadPanel(true);return false">&#8595;&nbsp;Panel (CSV) — with Tab 2&rsquo;s b and g</a>
+    <a class="rbtn" href="did-companion-replication.zip" download="did-companion-replication.zip">&#8595;&nbsp;Full package (.zip)</a>
+    <span class="rnote">zip: Python, R, and Julia scripts + reference panel + README</span>
+  </div>
+  </div>
+  <div class="secblock">
+  <div class="seclab">3 · Code</div>
+  <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-py','did_lab_replication.py')">&#8595;&nbsp;Python code</button>did_lab_replication.py <span style="font-weight:400;color:var(--muted)">(requires numpy, pandas, scipy, pyfixest — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-py',this)">Copy</button><div class="codebox" id="code-py">&quot;&quot;&quot;
+DiD estimation script (Python), companion to Winkler et al. (2026):
+  https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
+
+Estimates the companion&#x27;s four specifications on the exported panel, all with unit
+and period fixed effects and one Treat x Post regressor (D):
+  levels OLS     reported as % of the counterfactual mean
+                 (treated pre-mean x control post/pre ratio); delta-method CI
+  log(1+Y) OLS
+  weighted log(1+Y) OLS   (pre-period mean outcome weights)
+  PPML           reported as exp(b) - 1
+
+Input: did_lab_panel.csv. Download it from the applet (&quot;Panel (CSV)&quot; buttons
+on the Replication tab; any slider settings) or use the bundled copy
+(default settings, seed 4). Reference values for the bundled panel:
+  n = 32,000   sum(y) = 23,551,023
+  levels -0.03861113 [-4.4695%, -3.2527%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
+  w-log  -0.03704146 [-4.3714%, -3.0369%]   PPML     -0.03859994 [-4.4669%, -3.2492%]
+  (package small-sample conventions can shift CI ends in the 3rd decimal)
+True estimand values are properties of the DGP, not recoverable from the CSV;
+read them off the applet&#x27;s Tab 1 cards.
+
+Requires: numpy, pandas, scipy, pyfixest   (pip install numpy pandas scipy pyfixest)
+&quot;&quot;&quot;
+
+import numpy as np
+import pandas as pd
+import pyfixest as pf
+from pyfixest.estimation import demean
+from scipy.stats import t as t_dist
+
+df = pd.read_csv(&quot;did_lab_panel.csv&quot;)
+print(f&quot;rows = {len(df)}   sum(y) = {int(df.y.sum())}&quot;)
+
+# scale for the levels estimate: treated pre-mean x control post/pre ratio
+mean_treat_pre = df.loc[(df.treat == 1) &amp; (df.post == 0), &quot;y&quot;].mean()
+mean_ctrl_pre  = df.loc[(df.treat == 0) &amp; (df.post == 0), &quot;y&quot;].mean()
+mean_ctrl_post = df.loc[(df.treat == 0) &amp; (df.post == 1), &quot;y&quot;].mean()
+scale = mean_treat_pre * mean_ctrl_post / mean_ctrl_pre
+
+n_pairs = df[&quot;pair&quot;].nunique()
+tcrit   = t_dist.ppf(0.975, df=n_pairs - 1)
+
+df[&quot;log_y&quot;] = np.log1p(df.y)
+w_pre = df[df.post == 0].groupby(&quot;unit&quot;)[&quot;y&quot;].mean().rename(&quot;w_pre&quot;)
+df = df.merge(w_pre, on=&quot;unit&quot;)
+
+# SEs: CRV1 clustered by matched pair. With 1:1 matching WITHOUT replacement
+# (this panel), each unit belongs to exactly one pair, so two-way unit-and-pair
+# clustering is identical to pair clustering. If you match WITH replacement
+# (controls reused across pairs), units no longer nest in pairs, so cluster
+# two-way instead: vcov={&quot;CRV1&quot;: &quot;unit+pair&quot;}.
+V = {&quot;CRV1&quot;: &quot;pair&quot;}
+m_levels = pf.feols(&quot;y ~ D | unit + period&quot;,     data=df, vcov=V)
+m_log    = pf.feols(&quot;log_y ~ D | unit + period&quot;, data=df, vcov=V)
+m_wlog   = pf.feols(&quot;log_y ~ D | unit + period&quot;, data=df[df.w_pre &gt; 0],
+                    weights=&quot;w_pre&quot;, vcov=V)  # pyfixest requires strictly
+                    # positive weights, so drop zero-weight units (they carry
+                    # no information either way)
+m_ppml   = pf.fepois(&quot;y ~ D | unit + period&quot;,    data=df, vcov=V)
+# (fepois may note that all-zero units were dropped for separation; this is expected)
+b  = lambda m: m.coef()[&quot;D&quot;]
+se = lambda m: m.tidy()[&quot;Std. Error&quot;][&quot;D&quot;]
+
+# delta-method CI for the scaled levels effect theta = b/scale: the scale is
+# estimated from the same sample and strongly negatively correlated with b,
+# so a fixed-scale CI would be ~2.5x too wide.
+D_dem, _ = demean(df[[&quot;D&quot;]].to_numpy(float),
+                  df[[&quot;unit&quot;, &quot;period&quot;]].to_numpy(), np.ones(len(df)))
+D_dem = D_dem[:, 0]
+denom = D_dem @ D_dem
+resid_lv   = m_levels.resid()
+score_pair = np.bincount(df[&quot;pair&quot;], weights=D_dem * resid_lv,
+                         minlength=n_pairs)
+pair_mean    = lambda rows: df[rows].groupby(&quot;pair&quot;)[&quot;y&quot;].mean().to_numpy()
+pm_treat_pre = pair_mean((df.treat == 1) &amp; (df.post == 0))
+pm_ctrl_pre  = pair_mean((df.treat == 0) &amp; (df.post == 0))
+pm_ctrl_post = pair_mean((df.treat == 0) &amp; (df.post == 1))
+theta = b(m_levels) / scale
+psi = (score_pair / (denom * scale)
+       - (theta / n_pairs) * (
+             (pm_treat_pre - pm_treat_pre.mean()) / pm_treat_pre.mean()
+           - (pm_ctrl_pre  - pm_ctrl_pre.mean())  / pm_ctrl_pre.mean()
+           + (pm_ctrl_post - pm_ctrl_post.mean()) / pm_ctrl_post.mean()))
+se_theta = np.sqrt((psi**2).sum()) * n_pairs / (n_pairs - 1)
+
+ci = lambda est, s: f&quot;[{100*(est - tcrit*s):+.4f}%, {100*(est + tcrit*s):+.4f}%]&quot;
+print(f&quot;levels  {theta:+.8f}   {ci(theta, se_theta)}   (delta method)&quot;)
+print(f&quot;log1y   {b(m_log):+.8f}   {ci(b(m_log), se(m_log))}&quot;)
+print(f&quot;wlog    {b(m_wlog):+.8f}   {ci(b(m_wlog), se(m_wlog))}&quot;)
+d = b(m_ppml)
+print(f&quot;ppml    {np.exp(d)-1:+.8f}   [{100*(np.exp(d - tcrit*se(m_ppml))-1):+.4f}%, &quot;
+      f&quot;{100*(np.exp(d + tcrit*se(m_ppml))-1):+.4f}%]&quot;)
+
+
+# Standard regression table (raw coefficients).
+# NOTE: levels is in outcome units here (not the scaled % above), PPML is the
+# log coefficient (not exp(b)-1), and SEs use pyfixest&#x27;s default convention.
+print()
+pf.etable([m_levels, m_log, m_wlog, m_ppml], type=&quot;md&quot;)
+</div></div></details>
+  <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-r','did_lab_replication.R')">&#8595;&nbsp;R code</button>did_lab_replication.R <span style="font-weight:400;color:var(--muted)">(requires fixest — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-r',this)">Copy</button><div class="codebox" id="code-r"># ==============================================================================
+# DiD estimation script (R), companion to Winkler et al. (2026):
+#   https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
+#
+# Estimates the companion&#x27;s four specifications on the exported panel, all with unit
+# and period fixed effects and one Treat x Post regressor (D):
+#   levels OLS     reported as % of the counterfactual mean
+#                  (treated pre-mean x control post/pre ratio); delta-method CI
+#   log(1+Y) OLS
+#   weighted log(1+Y) OLS   (pre-period mean outcome weights)
+#   PPML           reported as exp(b) - 1
+#
+# Input: did_lab_panel.csv. Download it from the applet (&quot;Panel (CSV)&quot; buttons
+# on the Replication tab; any slider settings) or use the bundled copy
+# (default settings, seed 4). Reference values for the bundled panel:
+#   n = 32,000   sum(y) = 23,551,023
+#   levels -0.03861113 [-4.4695%, -3.2527%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
+#   w-log  -0.03704146 [-4.3714%, -3.0369%]   PPML     -0.03859994 [-4.4669%, -3.2492%]
+#   (package small-sample conventions can shift CI ends in the 3rd decimal)
+# True estimand values are properties of the DGP, not recoverable from the CSV;
+# read them off the applet&#x27;s Tab 1 cards.
+#
+# Requires: fixest   (install.packages(&quot;fixest&quot;))
+# ==============================================================================
+
+library(fixest)
+
+df &lt;- read.csv(&quot;did_lab_panel.csv&quot;)
+cat(sprintf(&quot;rows = %d   sum(y) = %.0f\n&quot;, nrow(df), sum(as.numeric(df$y))))
+
+# scale for the levels estimate: treated pre-mean x control post/pre ratio
+mean_treat_pre &lt;- mean(df$y[df$treat == 1 &amp; df$post == 0])
+mean_ctrl_pre  &lt;- mean(df$y[df$treat == 0 &amp; df$post == 0])
+mean_ctrl_post &lt;- mean(df$y[df$treat == 0 &amp; df$post == 1])
+scale          &lt;- mean_treat_pre * mean_ctrl_post / mean_ctrl_pre
+
+n_pairs &lt;- length(unique(df$pair))
+tcrit   &lt;- qt(0.975, df = n_pairs - 1)
+
+df$log_y &lt;- log1p(df$y)
+w_pre    &lt;- tapply(df$y[df$post == 0], df$unit[df$post == 0], mean)
+df$w_pre &lt;- as.numeric(w_pre[as.character(df$unit)])
+
+# SEs: CRV1 clustered by matched pair. With 1:1 matching WITHOUT replacement
+# (this panel), each unit belongs to exactly one pair, so two-way unit-and-pair
+# clustering is identical to pair clustering. If you match WITH replacement
+# (controls reused across pairs), units no longer nest in pairs, so cluster
+# two-way instead: cluster = ~unit + pair.
+m_levels &lt;- feols(y     ~ D | unit + period, data = df, cluster = ~pair)
+m_log    &lt;- feols(log_y ~ D | unit + period, data = df, cluster = ~pair)
+m_wlog   &lt;- feols(log_y ~ D | unit + period, data = df[df$w_pre &gt; 0, ],
+                  weights = ~w_pre, cluster = ~pair)  # zero-weight units drop out anyway
+m_ppml   &lt;- fepois(y    ~ D | unit + period, data = df, cluster = ~pair)
+
+# delta-method CI for the scaled levels effect theta = b/scale: the scale is
+# estimated from the same sample and strongly negatively correlated with b,
+# so a fixed-scale CI would be ~2.5x too wide.
+D_dem    &lt;- demean(X = data.frame(D = df$D), f = df[, c(&quot;unit&quot;, &quot;period&quot;)], tol = 1e-8)[, 1]
+resid_lv &lt;- resid(m_levels)
+denom    &lt;- sum(D_dem^2)
+score_pair   &lt;- tapply(D_dem * resid_lv, df$pair, sum)
+pm_treat_pre &lt;- tapply(df$y[df$treat == 1 &amp; df$post == 0], df$pair[df$treat == 1 &amp; df$post == 0], mean)
+pm_ctrl_pre  &lt;- tapply(df$y[df$treat == 0 &amp; df$post == 0], df$pair[df$treat == 0 &amp; df$post == 0], mean)
+pm_ctrl_post &lt;- tapply(df$y[df$treat == 0 &amp; df$post == 1], df$pair[df$treat == 0 &amp; df$post == 1], mean)
+theta &lt;- unname(coef(m_levels)[&quot;D&quot;]) / scale
+psi &lt;- score_pair / (denom * scale) -
+  (theta / n_pairs) * ((pm_treat_pre - mean(pm_treat_pre)) / mean(pm_treat_pre) -
+                       (pm_ctrl_pre  - mean(pm_ctrl_pre))  / mean(pm_ctrl_pre)  +
+                       (pm_ctrl_post - mean(pm_ctrl_post)) / mean(pm_ctrl_post))
+se_theta &lt;- sqrt(sum(psi^2)) * n_pairs / (n_pairs - 1)
+
+ci &lt;- function(est, s) sprintf(&quot;[%+.4f%%, %+.4f%%]&quot;, 100*(est - tcrit*s), 100*(est + tcrit*s))
+cat(sprintf(&quot;levels  %+.8f   %s   (delta method)\n&quot;, theta, ci(theta, se_theta)))
+cat(sprintf(&quot;log1y   %+.8f   %s\n&quot;, coef(m_log)[&quot;D&quot;],  ci(coef(m_log)[&quot;D&quot;],  se(m_log)[&quot;D&quot;])))
+cat(sprintf(&quot;wlog    %+.8f   %s\n&quot;, coef(m_wlog)[&quot;D&quot;], ci(coef(m_wlog)[&quot;D&quot;], se(m_wlog)[&quot;D&quot;])))
+d   &lt;- coef(m_ppml)[&quot;D&quot;]
+sd_ &lt;- se(m_ppml)[&quot;D&quot;]
+cat(sprintf(&quot;ppml    %+.8f   [%+.4f%%, %+.4f%%]\n&quot;, exp(d) - 1,
+            100*(exp(d - tcrit*sd_) - 1), 100*(exp(d + tcrit*sd_) - 1)))
+
+
+# Standard regression table (raw coefficients).
+# NOTE: levels is in outcome units here (not the scaled % above), PPML is the
+# log coefficient (not exp(b)-1), and SEs use fixest&#x27;s default convention.
+cat(&quot;\n&quot;)
+etable(m_levels, m_log, m_wlog, m_ppml)
+</div></div></details>
+  <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-jl','did_lab_replication.jl')">&#8595;&nbsp;Julia code</button>did_lab_replication.jl <span style="font-weight:400;color:var(--muted)">(requires DataFrames, FixedEffectModels, GLFixedEffectModels — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-jl',this)">Copy</button><div class="codebox" id="code-jl"># ==============================================================================
+# DiD estimation script (Julia), companion to Winkler et al. (2026):
+#   https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
+#
+# Estimates the companion&#x27;s four specifications on the exported panel, all with unit
+# and period fixed effects and one Treat x Post regressor (D):
+#   levels OLS     reported as % of the counterfactual mean
+#                  (treated pre-mean x control post/pre ratio); delta-method CI
+#   log(1+Y) OLS
+#   weighted log(1+Y) OLS   (pre-period mean outcome weights)
+#   PPML           reported as exp(b) - 1
+#
+# Input: did_lab_panel.csv. Download it from the applet (&quot;Panel (CSV)&quot; buttons
+# on the Replication tab; any slider settings) or use the bundled copy
+# (default settings, seed 4). Reference values for the bundled panel:
+#   n = 32,000   sum(y) = 23,551,023
+#   levels -0.03861113 [-4.4695%, -3.2527%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
+#   w-log  -0.03704146 [-4.3714%, -3.0369%]   PPML     -0.03859994 [-4.4669%, -3.2492%]
+#   (package small-sample conventions can shift CI ends in the 3rd decimal)
+# True estimand values are properties of the DGP, not recoverable from the CSV;
+# read them off the applet&#x27;s Tab 1 cards.
+#
+# Requires: import Pkg; Pkg.add([&quot;DelimitedFiles&quot;,&quot;DataFrames&quot;,&quot;Distributions&quot;,
+#   &quot;FixedEffects&quot;,&quot;FixedEffectModels&quot;,&quot;GLFixedEffectModels&quot;,&quot;RegressionTables&quot;])
+# ==============================================================================
+
+using DelimitedFiles, DataFrames, Statistics, Printf
+using FixedEffectModels, GLFixedEffectModels
+using FixedEffects: FixedEffect, solve_residuals!
+using RegressionTables
+using Distributions: TDist
+
+M, hdr = readdlm(&quot;did_lab_panel.csv&quot;, &#x27;,&#x27;, Int; header = true)
+df = DataFrame(M, vec(Symbol.(hdr)))
+@printf(&quot;rows = %d   sum(y) = %d\n&quot;, nrow(df), sum(df.y))
+
+# scale for the levels estimate: treated pre-mean x control post/pre ratio
+mean_treat_pre = mean(df.y[(df.treat .== 1) .&amp; (df.post .== 0)])
+mean_ctrl_pre  = mean(df.y[(df.treat .== 0) .&amp; (df.post .== 0)])
+mean_ctrl_post = mean(df.y[(df.treat .== 0) .&amp; (df.post .== 1)])
+scale = mean_treat_pre * mean_ctrl_post / mean_ctrl_pre
+
+n_pairs = length(unique(df.pair))
+tcrit   = quantile(TDist(n_pairs - 1), 0.975)
+
+df.log_y = log1p.(df.y)
+w_pre = combine(groupby(df[df.post .== 0, :], :unit), :y =&gt; mean =&gt; :w_pre)
+df = innerjoin(df, w_pre, on = :unit)
+
+# SEs: CRV1 clustered by matched pair. With 1:1 matching WITHOUT replacement
+# (this panel), each unit belongs to exactly one pair, so two-way unit-and-pair
+# clustering is identical to pair clustering. If you match WITH replacement
+# (controls reused across pairs), units no longer nest in pairs, so cluster
+# two-way instead: Vcov.cluster(:unit, :pair).
+m_levels = reg(df, @formula(y ~ D + fe(unit) + fe(period)), Vcov.cluster(:pair),
+               save = :residuals)
+m_log    = reg(df, @formula(log_y ~ D + fe(unit) + fe(period)), Vcov.cluster(:pair))
+m_wlog   = reg(df[df.w_pre .&gt; 0, :], @formula(log_y ~ D + fe(unit) + fe(period)),
+               Vcov.cluster(:pair), weights = :w_pre)  # zero-weight units drop out anyway
+m_ppml   = nlreg(df, @formula(y ~ D + fe(unit) + fe(period)),
+                 Poisson(), LogLink(), Vcov.cluster(:pair),
+                 separation = [:fe])   # drop all-zero units, like the other languages
+bof(m) = coef(m)[findfirst(==(&quot;D&quot;), coefnames(m))]
+sof(m) = stderror(m)[findfirst(==(&quot;D&quot;), coefnames(m))]
+
+# delta-method CI for the scaled levels effect theta = b/scale: the scale is
+# estimated from the same sample and strongly negatively correlated with b,
+# so a fixed-scale CI would be ~2.5x too wide.
+D_dem = solve_residuals!(Float64.(df.D),
+                         [FixedEffect(df.unit), FixedEffect(df.period)])[1]
+resid_lv = Float64.(residuals(m_levels))
+denom = sum(abs2, D_dem)
+df.score = D_dem .* resid_lv
+score_pair = sort!(combine(groupby(df, :pair), :score =&gt; sum =&gt; :s), :pair).s
+pair_mean(rows) = sort!(combine(groupby(df[rows, :], :pair), :y =&gt; mean =&gt; :m), :pair).m
+pm_treat_pre = pair_mean((df.treat .== 1) .&amp; (df.post .== 0))
+pm_ctrl_pre  = pair_mean((df.treat .== 0) .&amp; (df.post .== 0))
+pm_ctrl_post = pair_mean((df.treat .== 0) .&amp; (df.post .== 1))
+theta = bof(m_levels) / scale
+psi = score_pair ./ (denom * scale) .-
+      (theta / n_pairs) .* ((pm_treat_pre .- mean(pm_treat_pre)) ./ mean(pm_treat_pre) .-
+                            (pm_ctrl_pre  .- mean(pm_ctrl_pre))  ./ mean(pm_ctrl_pre)  .+
+                            (pm_ctrl_post .- mean(pm_ctrl_post)) ./ mean(pm_ctrl_post))
+se_theta = sqrt(sum(abs2, psi)) * n_pairs / (n_pairs - 1)
+
+ci(est, s) = @sprintf(&quot;[%+.4f%%, %+.4f%%]&quot;, 100*(est - tcrit*s), 100*(est + tcrit*s))
+@printf(&quot;levels  %+.8f   %s   (delta method)\n&quot;, theta, ci(theta, se_theta))
+@printf(&quot;log1y   %+.8f   %s\n&quot;, bof(m_log),  ci(bof(m_log),  sof(m_log)))
+@printf(&quot;wlog    %+.8f   %s\n&quot;, bof(m_wlog), ci(bof(m_wlog), sof(m_wlog)))
+d = bof(m_ppml)
+@printf(&quot;ppml    %+.8f   [%+.4f%%, %+.4f%%]\n&quot;, exp(d) - 1,
+        100*(exp(d - tcrit*sof(m_ppml)) - 1), 100*(exp(d + tcrit*sof(m_ppml)) - 1))
+
+
+# Standard regression table (raw coefficients).
+# NOTE: levels is in outcome units here (not the scaled % above), PPML is the
+# log coefficient (not exp(b)-1), and SEs use the package default convention.
+println(regtable(m_levels, m_log, m_wlog, m_ppml))
+</div></div></details>
+  </div>
+</section>
+
+<div class="footerbar">
+  <span title="treated–control pairs, 1:1 matched (total units = 2× this)">matched pairs <input id="nUnits" type="number" value="800" min="100" max="2000" step="100"></span>
+  <span>seed <input id="seed" type="number" value="4"></span>
+  <button id="reroll">Re-draw</button>
+  <button id="copylink" title="Copy a URL that restores the current settings">Copy settings link</button>
+</div>
+
+<details><summary>DGP and specification details</summary>
+<p>Balanced matched-pair panel. Each treated unit i has baseline b<sub>0i</sub>(1+b); its matched control has b<sub>0i</sub>, where b is the Tab 2 baseline-gap slider (b = 0 on Tab 1). The b<sub>0i</sub> sit at the midpoint quantiles of lognormal(0, σ²<sub>pop</sub>), and σ<sub>pop</sub> is solved numerically on that quantile grid so the realized top-decile share of the total equals the &ldquo;% of outcome in top decile&rdquo; slider. Panel: 10 pre + 10 post periods. Outcomes: Y<sub>it</sub> = b<sub>0i</sub>·(1+g)<sup>t</sup>·(1+θ<sub>i</sub>)<sup>D<sub>it</sub></sup>·ε<sub>it</sub>·100, rounded to integer counts, with g the Tab 2 common-growth slider (g = 0 on Tab 1). θ<sub>i</sub> equals the head slider for the top size decile and the tail slider for the rest. ε<sub>it</sub> is mean-one multiplicative lognormal noise, e<sup>σZ−σ²/2</sup>, composed of a pair-common component (cv 0.12, shared by the two units of a pair in each period) and a unit-idiosyncratic component. Baseline total cv: σ<sub>i</sub> = 0.3·(b<sub>0i</sub>/b<sub>0,med</sub>)<sup>−0.2</sup>, clipped to [0.12, 0.60]. Treatment multiplies the idiosyncratic component of treated-unit volatility by √(1+Δ<sub>var</sub>) in post periods, for all treated units; the pair-common component is unchanged. True estimands: typical-unit = equal-weighted mean of θ<sub>i</sub>; population-total = baseline-weighted mean of θ<sub>i</sub>. Specifications: every estimator uses unit and period fixed effects with a single Treat×Post regressor — OLS in levels, OLS on log(1+Y), weighted OLS on log(1+Y) with pre-period mean outcome weights, and Poisson pseudo-maximum-likelihood (log link, reported as e<sup>δ</sup>−1). Standard errors are CRV1, clustered by matched pair, with t critical values on pairs−1 degrees of freedom; two-way clustering by unit and pair is identical here because units are nested within pairs. The levels coefficient is reported as a percent of the treated pre-period mean multiplied by the control post/pre growth ratio, with a delta-method confidence interval. The Tab 2 bias surface is the exact probability limit [b/(1+b)] · [(Ḡ<sub>post</sub>−Ḡ<sub>pre</sub>)/Ḡ<sub>post</sub>], with Ḡ the within-window mean of (1+g)<sup>t</sup>.</p>
+</details>
+</main>
+
+<script>
+"use strict";
+/* ================= RNG & error families ================= */
+function rng(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function randn(u){let a=u(),b=u();return Math.sqrt(-2*Math.log(a+1e-12))*Math.cos(2*Math.PI*b);}
+function gammaK(u,k){ // Marsaglia–Tsang, k>=0.3 guard via boost
+  let boost=1;
+  if(k<1){boost=Math.pow(u(),1/k);k+=1;}
+  const d=k-1/3,c=1/Math.sqrt(9*d);
+  for(;;){
+    let x,v;
+    do{x=randn(u);v=1+c*x;}while(v<=0);
+    v=v*v*v;
+    const uu=u();
+    if(uu<1-0.0331*x*x*x*x)return boost*d*v;
+    if(Math.log(uu)<0.5*x*x+d*(1-v+Math.log(v)))return boost*d*v;
+  }
+}
+// each returns mean-1 multiplicative error with cv ~= d
+const FAM={
+  lognormal:{draw:(u,d)=>{const s2=Math.log(1+d*d);return Math.exp(Math.sqrt(s2)*randn(u)-s2/2);},
+             par:d=>"σ = "+Math.sqrt(Math.log(1+d*d)).toFixed(2)},
+  gamma:{draw:(u,d)=>{const k=1/(d*d);return gammaK(u,k)/k;},par:d=>"k = "+(1/(d*d)).toFixed(1)},
+  uniform:{draw:(u,d)=>{const a=Math.min(d*Math.sqrt(3),0.99);return 1-a+2*a*u();},
+           par:d=>"width ±"+Math.min(d*Math.sqrt(3),0.99).toFixed(2)},
+  pareto:{draw:(u,d)=>{const al=1.2+1/d;return Math.pow(1-u(),-1/al)*(al-1)/al;},
+          par:d=>"tail α = "+(1.2+1/d).toFixed(1)}
+};
+
+/* ================= DGP ================= */
+function simulate(p){
+  const u=rng(p.seed);
+  const N=p.nUnits,T=p.Tpre+p.Tpost,nObs=2*N*T;
+  const baseC=new Float64Array(N),baseT=new Float64Array(N);
+  // sizes placed at lognormal quantiles (stratified), so the concentration slider maps exactly
+  // into realized decile shares and the true estimands are stable across redraws
+  for(let i=0;i<N;i++){const b=Math.exp(p.sigmaPop*qnorm((i+0.5)/N));baseC[i]=b;baseT[i]=b*(1+p.gap);}
+  const vir=new Float64Array(N);
+  for(let i=0;i<N;i++)vir[i]=Math.log(baseC[i]); // head = top size decile: slider maps 1:1 into the decile chart
+  const idx=[...Array(N).keys()].sort((a,b)=>vir[b]-vir[a]);
+  const sortedB=[...baseC].sort((a,b)=>a-b);const medBase=sortedB[Math.floor(N/2)];
+  const head=new Uint8Array(N);const nHead=Math.round(0.1*N);
+  for(let k=0;k<nHead;k++)head[idx[k]]=1;
+  const theta=new Float64Array(N);
+  for(let i=0;i<N;i++)theta[i]=head[i]?p.betaHead:p.betaTail;
+  const draw=FAM[p.dist].draw;
+  const y=new Float64Array(nObs),treat=new Uint8Array(nObs),post=new Uint8Array(nObs),
+        unit=new Int32Array(nObs),per=new Int32Array(nObs);
+  let k=0;
+  const sigC=0.12; // fixed pair-common shock (matching on trajectories); cancels in pair contrasts
+  const gam=p.gamma??0.2; // size–volatility scaling exponent (Stanley et al. 1996; Riccaboni et al. 2008)
+  const dVol=p.dVol||0;   // proportional change in idiosyncratic volatility at treatment (all units)
+  for(let i=0;i<N;i++){
+    // baseline cv follows sigma_i = d * (b_i/b_med)^(-gamma), clipped to [0.12, 0.6]
+    const sigBase=Math.min(0.6,Math.max(0.12,p.d*Math.pow(baseC[i]/medBase,-gam)));
+    const idio0=Math.sqrt(Math.max(sigBase*sigBase-sigC*sigC,4e-4));
+    const common=new Float64Array(T);
+    for(let t=0;t<T;t++)common[t]=draw(u,sigC);
+    for(let arm=0;arm<2;arm++){
+      const base=arm?baseT[i]:baseC[i];
+      for(let t=0;t<T;t++){
+        const isPost=t>=p.Tpre?1:0,D=arm*isPost;
+        // treatment scales EVERY treated unit's idiosyncratic volatility by (1+dVol) — no head/tail cliff;
+        // the Jensen incidence concentrates in the tail only because sigma_i is larger there
+        const dIdio=D?idio0*Math.max(0.05,1+dVol):idio0;
+        const eps=common[t]*draw(u,dIdio); // product of independent mean-1 draws stays mean-1
+        let lam=base*Math.pow(1+p.growth,t)*(D?(1+theta[i]):1)*eps*100;
+        y[k]=Math.round(lam);
+        treat[k]=arm;post[k]=isPost;unit[k]=arm*N+i;per[k]=t;k++;
+      }
+    }
+  }
+  let typ=0,agg=0,ws=0;
+  for(let i=0;i<N;i++){typ+=theta[i];agg+=baseT[i]*theta[i];ws+=baseT[i];}
+  return {y,treat,post,unit,per,nUnits:2*N,nPers:T,N,Tpre:p.Tpre,
+          trueTypical:typ/N,trueAggregate:agg/ws,baseT,baseC,vir};
+}
+
+/* ================= estimators ================= */
+function demean2w(x,unit,per,nU,nP,w,mask){
+  const r=Float64Array.from(x);
+  const uS=new Float64Array(nU),uW=new Float64Array(nU),pS=new Float64Array(nP),pW=new Float64Array(nP);
+  for(let iter=0;iter<60;iter++){
+    uS.fill(0);uW.fill(0);
+    for(let k=0;k<r.length;k++){if(!mask[k])continue;uS[unit[k]]+=w[k]*r[k];uW[unit[k]]+=w[k];}
+    for(let s=0;s<nU;s++)if(uW[s]>0)uS[s]/=uW[s];
+    for(let k=0;k<r.length;k++){if(!mask[k])continue;r[k]-=uS[unit[k]];}
+    pS.fill(0);pW.fill(0);
+    for(let k=0;k<r.length;k++){if(!mask[k])continue;pS[per[k]]+=w[k]*r[k];pW[per[k]]+=w[k];}
+    for(let t=0;t<nP;t++)if(pW[t]>0)pS[t]/=pW[t];
+    let delta=0;
+    for(let k=0;k<r.length;k++){if(!mask[k])continue;const a=pS[per[k]];r[k]-=a;delta+=a*a;}
+    if(delta<1e-12)break;
+  }
+  return r;
+}
+function ppml(y,treat,post,unit,per,nU,nP,wantLam){
+  const n=y.length;
+  const a=new Float64Array(nU).fill(1),b=new Float64Array(nP).fill(1);
+  let c=1,yD=0;
+  const yU=new Float64Array(nU),yP=new Float64Array(nP);
+  for(let k=0;k<n;k++){yU[unit[k]]+=y[k];yP[per[k]]+=y[k];if(treat[k]&&post[k])yD+=y[k];}
+  const den=new Float64Array(Math.max(nU,nP));
+  for(let iter=0;iter<200;iter++){
+    den.fill(0);
+    for(let k=0;k<n;k++)den[unit[k]]+=b[per[k]]*(treat[k]&&post[k]?c:1);
+    for(let s=0;s<nU;s++)a[s]=den[s]>0?yU[s]/den[s]:0;
+    den.fill(0);
+    for(let k=0;k<n;k++)den[per[k]]+=a[unit[k]]*(treat[k]&&post[k]?c:1);
+    for(let t=0;t<nP;t++)b[t]=den[t]>0?yP[t]/den[t]:0;
+    let ds=0;
+    for(let k=0;k<n;k++)if(treat[k]&&post[k])ds+=a[unit[k]]*b[per[k]];
+    const cN=ds>0?yD/ds:1;
+    const ch=Math.abs(Math.log(cN/c));c=cN;
+    if(ch<1e-10&&iter>3)break;
+  }
+  if(wantLam){
+    const lam=new Float64Array(n);
+    for(let k=0;k<n;k++)lam[k]=a[unit[k]]*b[per[k]]*((treat[k]&&post[k])?c:1);
+    return {delta:Math.log(c),lam};
+  }
+  return Math.log(c);
+}
+/* ================= shared helpers ================= */
+const $=id=>document.getElementById(id);
+const TRUTH="#B31B1B"; // Cornell red, reserved for true DGP effects
+// inverse normal CDF (Acklam approximation)
+function qnorm(p){
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00],
+        b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01],
+        c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00],
+        d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const pl=0.02425;
+  if(p<pl){const q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p>1-pl){const q=Math.sqrt(-2*Math.log(1-p));return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  const q=p-0.5,r=q*q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+// sigma_pop such that the top size-decile holds `share` of the lognormal total: share = Phi(sigma - z90)
+function sigmaFromShare(share){return 1.2815516+qnorm(share);}
+// exact finite-sample version: solve sigma so that with sizes at the N midpoint quantiles,
+// the top decile's realized share equals the target (kills slider-vs-chart discretization mismatch)
+function sigmaForShareN(share,N){
+  const q=new Float64Array(N);
+  for(let i=0;i<N;i++)q[i]=qnorm((i+0.5)/N);
+  const nTop=Math.ceil(N/10);
+  const f=sig=>{let tot=0,top=0;
+    for(let i=0;i<N;i++){const b=Math.exp(sig*q[i]);tot+=b;if(i>=N-nTop)top+=b;}
+    return top/tot;};
+  let lo=0.05,hi=4;
+  for(let it=0;it<40;it++){const mid=(lo+hi)/2;if(f(mid)<share)lo=mid;else hi=mid;}
+  return (lo+hi)/2;
+}
+const fmtPct=x=>((x>0?"+":"")+(100*x).toFixed(1)+"%").replace("-","\u2212");
+function niceStep(x){const e=Math.pow(10,Math.floor(Math.log10(x||1e-6)));const m=x/e;return (m<1.5?1:m<3.5?2:m<7.5?5:10)*e;}
+function crSE(yv,Dv,w,unit,per,nU,nP){
+  // SEs clustered at the MATCHED-PAIR level (pair i = units i and i+N), the
+  // level at which the design matches and at which the pair-common shock
+  // correlates errors; calibrated to fixest/pyfixest CRV1 with cluster = ~pair
+  const n=yv.length, maskAll=new Uint8Array(n).fill(1), nPair=nU/2;
+  const yd=demean2w(yv,unit,per,nU,nP,w,maskAll);
+  const dd=demean2w(Float64Array.from(Dv),unit,per,nU,nP,w,maskAll);
+  let num=0,den=0;
+  for(let k=0;k<n;k++){num+=w[k]*dd[k]*yd[k];den+=w[k]*dd[k]*dd[k];}
+  const b=num/den;
+  const sc=new Float64Array(nPair);
+  for(let k=0;k<n;k++)sc[unit[k]%nPair]+=w[k]*dd[k]*(yd[k]-b*dd[k]);
+  let meat=0;for(let g=0;g<nPair;g++)meat+=sc[g]*sc[g];
+  const se=Math.sqrt(meat)/den*(nPair/(nPair-1));
+  return {b,se,sc,den};
+}
+function estimateWithSE(sim){
+  const {y,treat,post,unit,per,nUnits,nPers}=sim;
+  const n=y.length;
+  const D=new Float64Array(n);for(let k=0;k<n;k++)D[k]=treat[k]*post[k];
+  const ones=new Float64Array(n).fill(1);
+  // scaling for levels (estimated counterfactual mean, treated as fixed)
+  let s=0,c=0,cPre=0,cPost=0,nPre=0,nPost=0;
+  for(let k=0;k<n;k++){
+    if(treat[k]&&!post[k]){s+=y[k];c++;}
+    else if(!treat[k]){if(post[k]){cPost+=y[k];nPost++;}else{cPre+=y[k];nPre++;}}
+  }
+  const scale=(s/c)*((cPost/nPost)/(cPre/nPre));
+  const lv=crSE(Float64Array.from(y),D,ones,unit,per,nUnits,nPers);
+  // Delta-method SE for the SCALED levels effect theta = b/S, S = A*C/B with
+  // A = treated pre-mean, B = control pre-mean, C = control post-mean (all
+  // estimated from the same sample; corr(b,S) is strongly negative here, so
+  // treating S as fixed overstates the CI by a factor ~2.5). Influence form:
+  // psi_g = sc_g/(den*S) - (theta/G)*[(a_g-A)/A - (b_g-B)/B + (c_g-C)/C]
+  const nPairD=nUnits/2;
+  const aG=new Float64Array(nPairD),bG=new Float64Array(nPairD),cG=new Float64Array(nPairD);
+  for(let k=0;k<n;k++){
+    const g=unit[k]%nPairD;
+    if(treat[k]&&!post[k])aG[g]+=y[k];
+    else if(!treat[k]&&!post[k])bG[g]+=y[k];
+    else if(!treat[k]&&post[k])cG[g]+=y[k];
+  }
+  let Am=0,Bm=0,Cm=0;
+  const TpreD=10,TpostD=10; // panel constants
+  for(let g=0;g<nPairD;g++){aG[g]/=TpreD;bG[g]/=TpreD;cG[g]/=TpostD;Am+=aG[g]/nPairD;Bm+=bG[g]/nPairD;Cm+=cG[g]/nPairD;}
+  const thetaL=lv.b/scale;
+  let meatD=0;
+  for(let g=0;g<nPairD;g++){
+    const psi=lv.sc[g]/(lv.den*scale)-(thetaL/nPairD)*((aG[g]-Am)/Am-(bG[g]-Bm)/Bm+(cG[g]-Cm)/Cm);
+    meatD+=psi*psi;
+  }
+  const seL=Math.sqrt(meatD)*(nPairD/(nPairD-1));
+  const ly=new Float64Array(n);for(let k=0;k<n;k++)ly[k]=Math.log(1+y[k]);
+  const lg=crSE(ly,D,ones,unit,per,nUnits,nPers);
+  const wU=new Float64Array(nUnits),cU=new Float64Array(nUnits);
+  for(let k=0;k<n;k++)if(!post[k]){wU[unit[k]]+=y[k];cU[unit[k]]++;}
+  for(let u2=0;u2<nUnits;u2++)wU[u2]=cU[u2]>0?wU[u2]/cU[u2]:0;
+  const w=new Float64Array(n);for(let k=0;k<n;k++)w[k]=wU[unit[k]];
+  const wl=crSE(ly,D,w,unit,per,nUnits,nPers);
+  // PPML: delta + lambda-weighted CRV1
+  const P=ppml(y,treat,post,unit,per,nUnits,nPers,true);
+  const ddP=demean2w(D,unit,per,nUnits,nPers,P.lam,new Uint8Array(n).fill(1));
+  let A=0;for(let k=0;k<n;k++)A+=P.lam[k]*ddP[k]*ddP[k];
+  const nPair=nUnits/2;
+  const scP=new Float64Array(nPair);
+  for(let k=0;k<n;k++)scP[unit[k]%nPair]+=ddP[k]*(y[k]-P.lam[k]);
+  let meatP=0;for(let g=0;g<nPair;g++)meatP+=scP[g]*scP[g];
+  const seP=Math.sqrt(meatP)/A*(nPair/(nPair-1));
+  // t critical value with (pairs-1) df, matching fixest/pyfixest CI conventions
+  const dfree=nUnits/2-1;
+  const z=1.959963985+2.3685/dfree;
+  return [
+    {key:"levelsPct",name:"Levels OLS",est:thetaL,lo:thetaL-z*seL,hi:thetaL+z*seL,
+     lo1:thetaL-seL,hi1:thetaL+seL},
+    {key:"logOLS",name:"log(1+Y) OLS",est:lg.b,lo:lg.b-z*lg.se,hi:lg.b+z*lg.se,lo1:lg.b-lg.se,hi1:lg.b+lg.se},
+    {key:"wLogOLS",name:"Weighted log OLS",est:wl.b,lo:wl.b-z*wl.se,hi:wl.b+z*wl.se,lo1:wl.b-wl.se,hi1:wl.b+wl.se},
+    {key:"ppml",name:"PPML",est:Math.exp(P.delta)-1,lo:Math.exp(P.delta-z*seP)-1,hi:Math.exp(P.delta+z*seP)-1,
+     lo1:Math.exp(P.delta-seP)-1,hi1:Math.exp(P.delta+seP)-1}
+  ];
+}
+/* point-and-CI renderer (single-draw regression chart) */
+function drawPoints(svgId,W,H,items,rules){
+  const mL=56,mR=168,mT=16,mB=44;
+  let lo=0,hi=0;
+  rules.forEach(r=>{lo=Math.min(lo,r.v);hi=Math.max(hi,r.v);});
+  items.forEach(it=>{lo=Math.min(lo,it.lo);hi=Math.max(hi,it.hi);});
+  const pad=(hi-lo)*0.14||0.01;lo-=pad;hi+=pad;
+  const yy=v=>mT+(H-mT-mB)*(1-(v-lo)/(hi-lo));
+  let s="";
+  const step=niceStep((hi-lo)/6);
+  for(let g=Math.ceil(lo/step)*step;g<=hi;g+=step){
+    s+=`<line x1="${mL}" x2="${W-mR}" y1="${yy(g)}" y2="${yy(g)}" stroke="#eee"/>`;
+    s+=`<text class="axislab" x="${mL-6}" y="${yy(g)+3}" text-anchor="end">${((100*g).toFixed(step<0.01?1:0)+"%").replace("-","\u2212")}</text>`;
+  }
+  s+=`<line x1="${mL}" x2="${W-mR}" y1="${yy(0)}" y2="${yy(0)}" stroke="#444" stroke-width="1.6"/>`;
+  const lab=rules.map(r=>({...r,yL:yy(r.v)})).sort((a,b)=>a.yL-b.yL);
+  for(let i=1;i<lab.length;i++)if(lab[i].yL-lab[i-1].yL<34)lab[i].yL=lab[i-1].yL+34;
+  for(let i=lab.length-1;i>=0;i--){if(lab[i].yL>H-mB-6)lab[i].yL=H-mB-6;if(i<lab.length-1&&lab[i+1].yL-lab[i].yL<34)lab[i].yL=lab[i+1].yL-34;}
+  lab.forEach(r=>{
+    const c=r.col||"#111",yR=yy(r.v);
+    s+=`<line x1="${mL}" x2="${W-mR}" y1="${yR}" y2="${yR}" stroke="${c}" stroke-width="1.6" ${r.dash?'stroke-dasharray="6 4"':''}/>`;
+    s+=`<path d="M ${W-mR+30} ${r.yL-4} L ${W-mR+12} ${yR}" stroke="${c}" stroke-width="1.2" fill="none"/>`;
+    s+=`<path d="M ${W-mR+4} ${yR} l 9 -3.5 l 0 7 z" fill="${c}"/>`;
+    const parts=r.label.split("|");
+    s+=`<text class="axislab" x="${W-mR+34}" y="${r.yL-6}" fill="${c}">${parts[0]}</text>`;
+    if(parts[1])s+=`<text class="axislab" x="${W-mR+34}" y="${r.yL+9}" fill="${c}">${parts[1]}</text>`;
+  });
+  const bw=(W-mL-mR)/items.length;
+  items.forEach((it,j)=>{
+    const xs=mL+bw*j+bw/2;
+    const hw=Math.min(bw*0.17,19); // dainty half-width, stable across 3- and 4-item charts
+    s+=`<line x1="${xs}" x2="${xs}" y1="${yy(it.hi)}" y2="${yy(it.lo)}" stroke="#b9b9b9" stroke-width="1"/>`;
+    s+=`<line x1="${xs-hw*0.55}" x2="${xs+hw*0.55}" y1="${yy(it.hi)}" y2="${yy(it.hi)}" stroke="#b9b9b9" stroke-width="1"/>`;
+    s+=`<line x1="${xs-hw*0.55}" x2="${xs+hw*0.55}" y1="${yy(it.lo)}" y2="${yy(it.lo)}" stroke="#b9b9b9" stroke-width="1"/>`;
+    if(it.biasFrom!==undefined&&Math.abs(it.est-it.biasFrom)>(hi-lo)*0.02){
+      const yA=yy(it.biasFrom),yB=yy(it.est),hwB=hw*1.9;
+      // shaded band from the estimator's target estimand to its estimate = realized bias
+      s=`<rect x="${xs-hwB}" y="${Math.min(yA,yB)}" width="${2*hwB}" height="${Math.abs(yB-yA)}" fill="#B31B1B" opacity="0.13"/>`+s;
+      s+=`<line x1="${xs-hwB}" x2="${xs+hwB}" y1="${yA}" y2="${yA}" stroke="#B31B1B" stroke-width="1" stroke-dasharray="2 3" opacity="0.8"/>`;
+      s+=`<text class="axislab" x="${xs+hwB+5}" y="${(yA+yB)/2+3}" fill="#B31B1B" font-weight="600">bias ${fmtPct(it.est-it.biasFrom)}</text>`;
+    }
+    if(it.lo1!==undefined)s+=`<rect x="${xs-hw}" y="${yy(it.hi1)}" width="${2*hw}" height="${Math.max(1,yy(it.lo1)-yy(it.hi1))}" fill="#dcdcdc" stroke="#b9b9b9" stroke-width="0.8"/>`;
+    s+=`<line x1="${xs-hw}" x2="${xs+hw}" y1="${yy(it.est)}" y2="${yy(it.est)}" stroke="#000" stroke-width="2.6"/>`;
+    s+=`<text class="axislab" x="${xs}" y="${H-mB+15}" text-anchor="middle" fill="#000" font-weight="600">${it.name}</text>`;
+    s+=`<text class="axislab" x="${xs}" y="${H-mB+30}" text-anchor="middle" fill="#000" font-weight="600">${fmtPct(it.est)}</text>`;
+  });
+  $(svgId).innerHTML=s;
+}
+
+/* ================= state, hash sync ================= */
+const S={betaHead:-5,betaTail:0,dDisp1:-0.35,topShare:76,nUnits:800,
+         gap3:15,growth3:2,seed:4,tab:"t1"};
+const SLIDERS={betaHead:x=>(x>0?"+":"")+x+"%",betaTail:x=>(x>0?"+":"")+x+"%",
+               dDisp1:x=>(x>0?"+":"")+Math.round(100*x)+"%",topShare:x=>x+"%",
+               gap3:x=>(x>0?"+":"")+x+"%",growth3:x=>(x>0?"+":"")+x+"%"};
+function syncHash(){
+  const h=Object.entries(S).map(([k,v])=>k+"="+v).join("&");
+  history.replaceState(null,"","#"+h);
+}
+function loadHash(){
+  if(!location.hash)return;
+  // (older links may reference removed tabs)
+  for(const kv of location.hash.slice(1).split("&")){
+    const [k,v]=kv.split("=");
+    if(k in S)S[k]=(k==="tab")?v:+v;
+  }
+  if(S.tab!=="t1"&&S.tab!=="t3"&&S.tab!=="tlit"&&S.tab!=="trep")S.tab="t1";
+}
+
+/* ================= tab 1 ================= */
+function setPreset(p){
+  const v={"default":{topShare:76,betaHead:-5,betaTail:0,dDisp1:-0.35},
+           "null":{betaHead:0,betaTail:0,dDisp1:0},
+           varonly:{betaHead:0,betaTail:0,dDisp1:-0.35},
+           homog:{betaHead:-10,betaTail:-10,dDisp1:0}}[p];
+  if(!v)return;
+  for(const k in v){S[k]=v[k];const el=$(k);if(el){el.value=v[k];paintCtrl(k);}}
+  if(S.tab!=="t1")showTab("t1");else{syncHash();runTab1();}
+}
+let lastSim1=null;
+function runTab1(){
+  const p={nUnits:S.nUnits,Tpre:10,Tpost:10,sigmaPop:sigmaForShareN(S.topShare/100,S.nUnits),betaHead:S.betaHead/100,
+           betaTail:S.betaTail/100,gap:0,growth:0,dist:"lognormal",d:0.3,dVol:Math.sqrt(Math.max(1+S.dDisp1,0.01))-1,gamma:0.2,seed:S.seed};
+  const sim=simulate(p);lastSim1=sim;
+  $("truthTyp").textContent=fmtPct(sim.trueTypical);
+  $("truthAgg").textContent=fmtPct(sim.trueAggregate);
+  const b=[...sim.baseC].sort((x,y)=>y-x);
+  const tot=b.reduce((a,c)=>a+c,0),top=b.slice(0,Math.ceil(b.length/10)).reduce((a,c)=>a+c,0);
+  $("topShareKpi").textContent=(100*top/tot).toFixed(0)+"%";
+  drawDec(sim);
+  const reg=estimateWithSE(sim);
+  drawPoints("box1reg",640,330,reg,
+    [{v:sim.trueAggregate,label:"True population-total|effect "+fmtPct(sim.trueAggregate),col:TRUTH},
+     {v:sim.trueTypical,label:"True typical-unit|effect "+fmtPct(sim.trueTypical),col:TRUTH,dash:1}]);
+}
+function drawDec(sim){
+  // viewBox tracks the rendered width so the SVG text displays at true CSS px
+  // (the panel title's 12.5px), instead of being scaled up with the panel
+  const box=$("dec1");
+  let W=360;
+  if(box.getBoundingClientRect){const r=box.getBoundingClientRect();if(r&&r.width>60)W=Math.round(r.width);}
+  const N=sim.N,H=Math.round(W*2/3),mL=14,mR=10,mT=20,mB=42;
+  if(box.setAttribute)box.setAttribute("viewBox","0 0 "+W+" "+H);
+  const order=[...Array(N).keys()].sort((a,b)=>sim.vir[a]-sim.vir[b]);
+  const sh=new Float64Array(10);let tot=0;
+  order.forEach((i,r)=>{const d=Math.min(9,Math.floor(r/(N/10)));sh[d]+=sim.baseT[i];tot+=sim.baseT[i];});
+  const hi=Math.max(...sh)/tot*1.15;
+  let s="";
+  for(let d=0;d<10;d++){
+    const v=sh[d]/tot,x=mL+(W-mL-mR)*d/10+3,bw=(W-mL-mR)/10-6;
+    const y=mT+(H-mT-mB)*(1-v/hi);
+    s+=`<rect x="${x}" y="${y}" width="${bw}" height="${H-mB-y}" fill="${d===9?"#B31B1B":"#c9c4bb"}"/>`;
+    s+=`<text class="axislab" x="${x+bw/2}" y="${y-4}" text-anchor="middle">${(100*v).toFixed(v>0.05?0:1)}%</text>`;
+    s+=`<text class="axislab" x="${x+bw/2}" y="${H-mB+15}" text-anchor="middle">${d+1}</text>`;
+  }
+  s+=`<text class="axislab" x="${mL+(W-mL-mR)/2}" y="${H-9}" text-anchor="middle">size decile (red = top decile)</text>`;
+  box.innerHTML=s;
+}
+
+/* ================= tab 2 ================= */
+/* ================= tab 3 ================= */
+function biasLevels(gap,growth,Tpre,Tpost){
+  let gp=0,go=0;
+  for(let t=0;t<Tpre;t++)gp+=Math.pow(1+growth,t)/Tpre;
+  for(let t=Tpre;t<Tpre+Tpost;t++)go+=Math.pow(1+growth,t)/Tpost;
+  return gap*(go-gp)/((1+gap)*go); // levels scaled by growth-projected pre-mean => denominator uses the post window
+}
+function colorBias(v,vmax){ // diverging blue–white–red, linear, capped at ±vmax
+  const x=Math.max(-1,Math.min(1,v/vmax));
+  const t=Math.abs(x);
+  const mix=(a,b)=>Math.round(a+(b-a)*t);
+  return x>=0?`rgb(${mix(252,178)},${mix(251,24)},${mix(248,43)})`
+             :`rgb(${mix(252,33)},${mix(251,102)},${mix(248,172)})`;
+}
+function updateT3Head(){
+  drawHeat();
+  const gap=S.gap3/100,g=S.growth3/100;
+  const reading=biasLevels(gap,g,10,10);
+  const fGap=gap/(1+gap);
+  let gp=0,go=0;
+  for(let t=0;t<10;t++)gp+=Math.pow(1+g,t)/10;
+  for(let t=10;t<20;t++)go+=Math.pow(1+g,t)/10;
+  const fGrow=(go-gp)/go;
+  $("kFactGap").textContent=fmtPct(fGap);
+  $("kFactGrow").textContent=fmtPct(fGrow);
+  $("kBias").textContent=fmtPct(reading);
+  drawTraj(gap,g);
+  return {gap,g,reading,go,gp};
+}
+function runTab3(){
+  const {gap,g}=updateT3Head();
+  // DGP feeds from Tab 1's sliders; gap and growth are layered on top
+  const p={nUnits:S.nUnits,Tpre:10,Tpost:10,sigmaPop:sigmaForShareN(S.topShare/100,S.nUnits),
+           betaHead:S.betaHead/100,betaTail:S.betaTail/100,
+           gap:gap,growth:g,dist:"lognormal",d:0.3,
+           dVol:Math.sqrt(Math.max(1+S.dDisp1,0.01))-1,gamma:0.2,seed:S.seed};
+  const sim=simulate(p);
+  $("kTruthAgg3").textContent=fmtPct(sim.trueAggregate);
+  // dashed rule = the realized levels-OLS estimate; the band marks truth -> estimate (= realized bias)
+  const reg=estimateWithSE(sim).filter(e=>e.key!=="logOLS").map(e=>e.key==="levelsPct"?{...e,biasFrom:sim.trueAggregate}:e);
+  const lev=reg.find(e=>e.key==="levelsPct").est;
+  drawPoints("box3",720,360,reg,
+    [{v:sim.trueAggregate,label:"True population-total|effect "+fmtPct(sim.trueAggregate),col:TRUTH},
+     {v:lev,label:"Estimated levels OLS|effect "+fmtPct(lev),col:"#333",dash:1}]);
+}
+function drawTraj(gap,g){
+  const Tp=10,To=10,n=Tp+To,d0=Tp-1;           // 10 pre + 10 post; anchor at last pre period
+  const ctrl=[],trt=[];
+  for(let t=0;t<n;t++){const c=100*Math.pow(1+g,t);ctrl.push(c);trt.push((1+gap)*c);}
+  const pcf=[];for(let t=d0;t<n;t++)pcf.push(trt[d0]+(ctrl[t]-ctrl[d0])); // additive (levels-DiD) counterfactual
+  let vmin=Infinity,vmax=-Infinity;
+  for(let t=0;t<n;t++){vmin=Math.min(vmin,ctrl[t],trt[t]);vmax=Math.max(vmax,ctrl[t],trt[t]);}
+  for(const v of pcf){vmin=Math.min(vmin,v);vmax=Math.max(vmax,v);}
+  const pad=(vmax-vmin)*0.12||1;vmin-=pad;vmax+=pad;
+  const lo=Math.log(Math.max(vmin,1)),hi=Math.log(vmax);
+  const Y0=62,Y1=205,RED="#B31B1B",GREY="#8a8a8a";
+  const panels=[{x0:46,x1:340,lab:"In levels",log:false},{x0:412,x1:706,lab:"In logs",log:true}];
+  const xp=(p,t)=>p.x0+(t/(n-1))*(p.x1-p.x0);
+  const yp=(p,v)=>p.log?Y1-(Math.log(v)-lo)/(hi-lo)*(Y1-Y0):Y1-(v-vmin)/(vmax-vmin)*(Y1-Y0);
+  let s="";
+  for(const p of panels){
+    s+=`<text x="${p.x0}" y="44" class="axislab" font-weight="600">${p.lab}</text>`;
+    const dx=xp(p,d0+0.5).toFixed(1);
+    s+=`<line x1="${dx}" y1="${Y0-4}" x2="${dx}" y2="${Y1}" stroke="#ccc" stroke-dasharray="3 3"/>`;
+    if(!p.log){ // dashed additive counterfactual + shaded bias wedge live in LEVELS only
+      let w=[];for(let t=d0;t<n;t++)w.push(`${xp(p,t).toFixed(1)},${yp(p,trt[t]).toFixed(1)}`);
+      for(let t=n-1;t>=d0;t--)w.push(`${xp(p,t).toFixed(1)},${yp(p,pcf[t-d0]).toFixed(1)}`);
+      s+=`<polygon points="${w.join(' ')}" fill="${RED}" opacity="0.13"/>`;
+      let dl=[];for(let t=d0;t<n;t++)dl.push(`${xp(p,t).toFixed(1)},${yp(p,pcf[t-d0]).toFixed(1)}`);
+      s+=`<polyline points="${dl.join(' ')}" fill="none" stroke="${GREY}" stroke-width="1.3" stroke-dasharray="5 4"/>`;
+    }
+    let cl=[],tl=[];
+    for(let t=0;t<n;t++){cl.push(`${xp(p,t).toFixed(1)},${yp(p,ctrl[t]).toFixed(1)}`);tl.push(`${xp(p,t).toFixed(1)},${yp(p,trt[t]).toFixed(1)}`);}
+    s+=`<polyline points="${cl.join(' ')}" fill="none" stroke="${GREY}" stroke-width="2.1"/>`;
+    s+=`<polyline points="${tl.join(' ')}" fill="none" stroke="${RED}" stroke-width="2.3"/>`;
+  }
+  // side labels in the gap beside the left panel, with little left-pointing arrows
+  const pL=panels[0],xe=pL.x1;
+  const labs=[{t:"treated",c:RED,ye:yp(pL,trt[n-1])},{t:"control",c:GREY,ye:yp(pL,ctrl[n-1])}];
+  labs.forEach(L=>L.ly=L.ye); labs.sort((a,b)=>a.ly-b.ly);
+  if(labs[1].ly-labs[0].ly<15){const m=(labs[0].ly+labs[1].ly)/2;labs[0].ly=m-8;labs[1].ly=m+8;}
+  labs.forEach(L=>{
+    s+=`<path d="M ${xe} ${L.ye.toFixed(1)} l 8 -3.2 l 0 6.4 z" fill="${L.c}"/>`;
+    s+=`<path d="M ${(xe+18).toFixed(1)} ${L.ly.toFixed(1)} L ${(xe+8).toFixed(1)} ${L.ye.toFixed(1)}" stroke="${L.c}" stroke-width="1.1" fill="none"/>`;
+    s+=`<text x="${(xe+21).toFixed(1)}" y="${(L.ly+3.5).toFixed(1)}" class="axislab" fill="${L.c}" text-anchor="start">${L.t}</text>`;
+  });
+  if(Math.abs(gap)>0.001&&Math.abs(g)>0.001){const tm=16;
+    s+=`<text x="${(xp(pL,tm)).toFixed(1)}" y="${((yp(pL,trt[tm])+yp(pL,pcf[tm-d0]))/2+4).toFixed(1)}" class="axislab" fill="${RED}" font-weight="600" text-anchor="middle">bias</text>`;}
+  $("traj3").innerHTML=s;
+}
+function drawHeat(){
+  const W=600,H=380,mL=64,mR=86,mT=14,mB=46;
+  const g0=-0.75,g1=0.75,r0=-0.05,r1=0.05; // gap x, growth y — symmetric about zero
+  const nx=46,ny=36;
+  const VCAP=0.25; // color cap: linear resolution where it matters; beyond shares end colors
+  let vmax=0;
+  const vals=[];
+  for(let j=0;j<ny;j++){const row=[];
+    for(let i=0;i<nx;i++){
+      const gap=g0+(g1-g0)*(i+0.5)/nx,gr=r0+(r1-r0)*(j+0.5)/ny;
+      const v=biasLevels(gap,gr,10,10);row.push(v);vmax=Math.max(vmax,Math.abs(v));
+    }vals.push(row);}
+  vmax=Math.min(vmax,VCAP);
+  const xx=g=>mL+(W-mL-mR)*(g-g0)/(g1-g0),yy=r=>mT+(H-mT-mB)*(1-(r-r0)/(r1-r0));
+  let s="";
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+    const gap=g0+(g1-g0)*i/nx,gr=r0+(r1-r0)*j/ny;
+    s+=`<rect x="${xx(gap)}" y="${yy(gr+(r1-r0)/ny)}" width="${(W-mL-mR)/nx+0.5}" height="${(H-mT-mB)/ny+0.5}" fill="${colorBias(vals[j][i],vmax)}"/>`;
+  }
+  // zero-bias axes
+  s+=`<line x1="${xx(0)}" x2="${xx(0)}" y1="${mT}" y2="${H-mB}" stroke="#fff" stroke-width="2.5"/><line x1="${xx(0)}" x2="${xx(0)}" y1="${mT}" y2="${H-mB}" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>`;
+  s+=`<line x1="${mL}" x2="${W-mR}" y1="${yy(0)}" y2="${yy(0)}" stroke="#fff" stroke-width="2.5"/><line x1="${mL}" x2="${W-mR}" y1="${yy(0)}" y2="${yy(0)}" stroke="#555" stroke-width="1" stroke-dasharray="2 3"/>`;
+  s+=`<text class="axislab" x="${xx(0)+4}" y="${mT+11}" fill="#333">gap = 0 → bias 0</text>`;
+  s+=`<text class="axislab" x="${mL+4}" y="${yy(0)-5}" fill="#333">growth = 0 → bias 0</text>`;
+  // axes labels
+  for(const g of [-0.75,-0.5,-0.25,0,0.25,0.5,0.75])
+    s+=`<text class="axislab" x="${xx(g)}" y="${H-mB+15}" text-anchor="middle">${String(Math.round(g*100)).replace("-","\u2212")}%</text>`;
+  for(const r of [-0.05,-0.04,-0.03,-0.02,-0.01,0,0.01,0.02,0.03,0.04,0.05])
+    s+=`<text class="axislab" x="${mL-6}" y="${yy(r)+3}" text-anchor="end">${(r*100).toFixed(0).replace("-","\u2212")}%</text>`;
+  s+=`<text class="axislab" x="${(mL+W-mR)/2}" y="${H-8}" text-anchor="middle"><tspan font-style="italic" font-weight="700">b</tspan> — baseline gap (treated vs control)</text>`;
+  s+=`<text class="axislab" transform="rotate(-90 14 ${(mT+H-mB)/2})" x="14" y="${(mT+H-mB)/2}" text-anchor="middle"><tspan font-style="italic" font-weight="700">g</tspan> — common growth per period</text>`;
+  // crosshair
+  const cx=xx(S.gap3/100),cy=yy(S.growth3/100);
+  s+=`<line x1="${cx-9}" x2="${cx+9}" y1="${cy-9}" y2="${cy+9}" stroke="#111" stroke-width="2.4"/><line x1="${cx-9}" x2="${cx+9}" y1="${cy+9}" y2="${cy-9}" stroke="#111" stroke-width="2.4"/>`;
+  // colorbar: linear in the bias, capped — end labels say so
+  const cbx=W-mR+18,cbw=16;
+  for(let j=0;j<60;j++){
+    const v=vmax*(1-2*j/59);
+    s+=`<rect x="${cbx}" y="${mT+(H-mT-mB)*j/60}" width="${cbw}" height="${(H-mT-mB)/60+0.5}" fill="${colorBias(v,vmax)}"/>`;
+  }
+  s+=`<text class="axislab" x="${cbx+cbw+5}" y="${mT+9}" font-size="10.5">≥ +${(100*vmax).toFixed(0)}%</text>`;
+  s+=`<text class="axislab" x="${cbx+cbw+5}" y="${H-mB-3}" font-size="10.5">≤ −${(100*vmax).toFixed(0)}%</text>`;
+  const tpos=v=>mT+(H-mT-mB)*(1-(v/vmax+1)/2);
+  for(const v of [0.2,0.1,0,-0.1,-0.2]){
+    const ty=tpos(v);
+    s+=`<line x1="${cbx+cbw}" x2="${cbx+cbw+3}" y1="${ty}" y2="${ty}" stroke="#666" stroke-width="1"/>`;
+    s+=`<text class="axislab" x="${cbx+cbw+5}" y="${ty+3.5}" font-size="10.5">${v===0?"0":(v>0?"+":"−")+Math.round(100*Math.abs(v))+"%"}</text>`;
+  }
+  $("heat3").innerHTML=s;
+}
+
+/* ================= wiring ================= */
+function showTab(t){
+  S.tab=t;
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
+  document.querySelectorAll("main section").forEach(sec=>sec.classList.toggle("on",sec.id===t));
+  syncHash();runActive();
+}
+function buildPanelCSV(useT2){
+  const gap=useT2?S.gap3/100:0, g=useT2?S.growth3/100:0;
+  const p={nUnits:S.nUnits,Tpre:10,Tpost:10,sigmaPop:sigmaForShareN(S.topShare/100,S.nUnits),
+           betaHead:S.betaHead/100,betaTail:S.betaTail/100,gap:gap,growth:g,dist:"lognormal",
+           d:0.3,dVol:Math.sqrt(Math.max(1+S.dDisp1,0.01))-1,gamma:0.2,seed:S.seed};
+  const sim=simulate(p);
+  const n=sim.y.length;
+  const idx=[...Array(n).keys()].sort((a,b)=>sim.unit[a]-sim.unit[b]||sim.per[a]-sim.per[b]);
+  const rows=["unit,period,pair,treat,post,D,y"];
+  for(const k of idx)
+    rows.push(sim.unit[k]+","+sim.per[k]+","+(sim.unit[k]%S.nUnits)+","+sim.treat[k]+","+sim.post[k]+","+(sim.treat[k]*sim.post[k])+","+sim.y[k]);
+  return rows.join("\n")+"\n";
+}
+function downloadPanel(useT2){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([buildPanelCSV(useT2)],{type:"text/csv"}));
+  a.download="did_lab_panel.csv";document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),800);
+}
+function downloadCode(id,fname){
+  const txt=document.getElementById(id).textContent;
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));
+  a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),800);
+}
+function copyCode(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>{btn.textContent="Copied \u2713";setTimeout(()=>btn.textContent="Copy",1400);});
+}
+function runActive(){
+  if(S.tab==="trep"||S.tab==="tlit")return;
+  if(S.tab==="t1")runTab1();
+  else runTab3();
+}
+let deb=null;
+function queueRun(){clearTimeout(deb);deb=setTimeout(()=>{syncHash();runActive();},260);}
+function paintCtrl(id){if($("v_"+id))$("v_"+id).textContent=SLIDERS[id](S[id]);}
+function applyStateToUI(){
+  for(const id in SLIDERS){if($(id)){$(id).value=S[id];paintCtrl(id);}}
+  $("seed").value=S.seed;$("nUnits").value=S.nUnits;
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===S.tab));
+  document.querySelectorAll("main section").forEach(sec=>sec.classList.toggle("on",sec.id===S.tab));
+}
+for(const id in SLIDERS){
+  const el=$(id);if(!el)continue;
+  el.addEventListener("input",()=>{S[id]=+el.value;paintCtrl(id);
+    if(S.tab==="t3"&&(id==="gap3"||id==="growth3")){syncHash();runTab3();}else queueRun();});
+}
+$("nUnits").addEventListener("change",()=>{S.nUnits=Math.max(100,Math.min(2000,+$("nUnits").value||800));queueRun();});
+$("seed").addEventListener("change",()=>{S.seed=+$("seed").value||1;queueRun();});
+$("reroll").addEventListener("click",()=>{S.seed=Math.floor(Math.random()*100000);$("seed").value=S.seed;syncHash();runActive();});
+$("copylink").addEventListener("click",()=>{
+  syncHash();
+  const tmp=document.createElement("textarea");tmp.value=location.href;document.body.appendChild(tmp);
+  tmp.select();try{document.execCommand("copy");}catch(e){}
+  if(navigator.clipboard)navigator.clipboard.writeText(location.href).catch(()=>{});
+  document.body.removeChild(tmp);
+  $("copylink").textContent="Copied ✓";setTimeout(()=>$("copylink").textContent="Copy settings link",1400);
+});
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+// --- draggable crosshair on the bias map ---
+(function(){
+  const svg=$("heat3");if(!svg||!svg.addEventListener)return;
+  const toParams=e=>{
+    const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+    const p=pt.matrixTransform(svg.getScreenCTM().inverse());
+    const mL=64,mR=86,mT=14,mB=46,W=600,H=380,g0=-0.75,g1=0.75,r0=-0.05,r1=0.05;
+    let gap=g0+(p.x-mL)/(W-mL-mR)*(g1-g0);
+    let gr=r0+(1-(p.y-mT)/(H-mT-mB))*(r1-r0);
+    gap=Math.max(-0.75,Math.min(0.75,gap));gr=Math.max(-0.05,Math.min(0.05,gr));
+    return {gap:Math.round(gap*100/5)*5, gr:Math.round(gr*100/0.25)*0.25};
+  };
+  const apply=(e,final)=>{
+    const {gap,gr}=toParams(e);
+    S.gap3=gap;S.growth3=gr;
+    $("gap3").value=gap;$("growth3").value=gr;
+    paintCtrl("gap3");paintCtrl("growth3");
+    if(final){syncHash();runTab3();}else updateT3Head();
+  };
+  let down=false;
+  svg.addEventListener("pointerdown",e=>{down=true;svg.setPointerCapture&&svg.setPointerCapture(e.pointerId);apply(e,false);e.preventDefault();});
+  svg.addEventListener("pointermove",e=>{if(down)apply(e,false);});
+  svg.addEventListener("pointerup",e=>{if(down){down=false;apply(e,true);}});
+  svg.addEventListener("pointercancel",()=>{down=false;});
+})();
+
+let debR=null;
+if(typeof window!=="undefined"&&window.addEventListener)window.addEventListener("resize",()=>{clearTimeout(debR);debR=setTimeout(()=>{if(lastSim1&&S.tab==="t1")drawDec(lastSim1);},150);});
+loadHash();applyStateToUI();runActive();
+</script>
+</body>
+</html>
