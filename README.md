@@ -12,10 +12,6 @@ Interactive companion website for **Does TikTok Promote or Cannibalize Music Str
 
 This website provides an interactive environment to explore Difference-in-Differences (DiD) estimands and estimators for heavy-tailed outcomes, with visualizations, examples, and practical guidance.
 
-## Screenshot
-
-
-
 ## Resources
 
 - 🌐 **Interactive website:** [didestimands.app](https://didestimands.app)
