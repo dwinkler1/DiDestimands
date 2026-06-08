@@ -882,8 +882,10 @@ const SLIDERS={betaHead:x=>(x>0?"+":"")+x+"%",betaTail:x=>(x>0?"+":"")+x+"%",
                dDisp1:x=>(x>0?"+":"")+Math.round(100*x)+"%",topShare:x=>x+"%",
                gap3:x=>(x>0?"+":"")+x+"%",growth3:x=>(x>0?"+":"")+x+"%"};
 function syncHash(){
+  // build the shareable settings URL but do NOT touch the address bar, so
+  // normal clicking keeps the URL clean; only "Copy settings link" uses this
   const h=Object.entries(S).map(([k,v])=>k+"="+v).join("&");
-  history.replaceState(null,"","#"+h);
+  return location.origin+location.pathname+"#"+h;
 }
 function loadHash(){
   if(!location.hash)return;
@@ -1146,10 +1148,10 @@ $("nUnits").addEventListener("change",()=>{S.nUnits=Math.max(100,Math.min(2000,+
 $("seed").addEventListener("change",()=>{S.seed=+$("seed").value||1;queueRun();});
 $("reroll").addEventListener("click",()=>{S.seed=Math.floor(Math.random()*100000);$("seed").value=S.seed;syncHash();runActive();});
 $("copylink").addEventListener("click",()=>{
-  syncHash();
-  const tmp=document.createElement("textarea");tmp.value=location.href;document.body.appendChild(tmp);
+  const url=syncHash();
+  const tmp=document.createElement("textarea");tmp.value=url;document.body.appendChild(tmp);
   tmp.select();try{document.execCommand("copy");}catch(e){}
-  if(navigator.clipboard)navigator.clipboard.writeText(location.href).catch(()=>{});
+  if(navigator.clipboard)navigator.clipboard.writeText(url).catch(()=>{});
   document.body.removeChild(tmp);
   $("copylink").textContent="Copied ✓";setTimeout(()=>$("copylink").textContent="Copy settings link",1400);
 });
