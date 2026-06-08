@@ -4,15 +4,17 @@
 
 Interactive companion website for **Does TikTok Promote or Cannibalize Music Streaming? Estimands and Identification with Heavy-Tailed Outcomes** and its accompanying practitioner's guide.
 
-**Visit the website:** https://didestimands.app
+**Visit the website:** [https://didestimands.app](https://didestimands.app)
 
 ## Overview
 
-This website provides an interactive environment for exploring Difference-in-Differences (DiD) estimands and estimators for heavy-tailed outcomes through visualizations, examples, and practical guidance.
+![DiD Estimands App Screenshot](https://didestimands.app)
+
+This website provides an interactive environment to explore Difference-in-Differences (DiD) estimands and estimators for heavy-tailed outcomes, with visualizations, examples, and practical guidance.
 
 ## Screenshot
 
-![DiD Estimands App Screenshot](docs/screenshot.png)
+
 
 ## Resources
 
