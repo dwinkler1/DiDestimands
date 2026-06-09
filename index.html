@@ -30,7 +30,7 @@ header p{margin:0 0 12px;color:var(--muted);font-size:13px;text-align:center}
 .tabs button.on{background:var(--bg);font-weight:600;color:var(--ink);position:relative;top:1px}
 .footerbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-top:1px solid var(--line);margin-top:28px;padding-top:14px;font-size:12.5px;color:var(--muted)}
 .footerbar input{width:62px;font:12.5px Georgia;padding:3px 5px;border:1px solid var(--line);border-radius:4px}
-.footerbar button{font:12.5px Georgia;padding:4px 10px;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer}
+.footerbar button{font:12.5px Georgia;padding:4px 10px;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer;color:var(--ink);-webkit-text-fill-color:var(--ink)}
 main{max-width:1060px;margin:0 auto;padding:18px 28px 60px}
 .ctrl{min-width:150px;flex:1;max-width:230px}
 .ctrl label{display:flex;justify-content:space-between;font-size:12px;color:#333;margin-bottom:1px}
@@ -188,7 +188,7 @@ section.on{display:block}
   <div class="secblock">
   <div class="seclab">1 · What changes when baseline levels differ?</div>
   <p class="sectext"><a href="#" onclick="showTab('t1');return false" style="color:var(--accent);font-weight:600">Tab 1</a> assumed matched treated and control units, so baseline level differences were zero by construction. This tab asks what happens when the matched-baseline assumption is relaxed. We keep the <a href="#" onclick="showTab('t1');return false" style="color:var(--accent);font-weight:600">Tab 1</a> DGP fixed, including the treatment effects, variance shift, outcome concentration, and panel structure. We then add two choices, defined by the sliders below: a treated-control baseline gap (b) and common proportional growth (g). Each maps to a factor shown below, and the two multiply to give the levels-OLS bias under the multiplicative trend assumed here. Under an additive trend, the bias would instead appear in PPML and log-based estimators.</p>
-  <p class="sectext" style="border-left:3px solid var(--accent);padding-left:12px"><b>Good news:</b> with matched baseline levels, this bias channel largely disappears; there is no level gap for proportional growth to amplify, so researchers do not need to worry about additive-versus-multiplicative trend structure for this concern.</p>
+  <p class="sectext" style="border-left:3px solid var(--accent);padding-left:12px"><b>Good news:</b> with matched baseline levels between treated and control outcomes, this bias channel largely disappears; there is no level gap for proportional growth to amplify, so researchers do not need to worry about additive vs. multiplicative trend structure for credible inference.</p>
   <div class="dgpgrid">
     <div class="leftcol">
       <div class="defctrl">
@@ -226,9 +226,9 @@ section.on{display:block}
   <div class="seclab">2 · Building intuition — why the two parameters multiply</div>
   <div class="chartbox" style="margin-top:4px"><div class="ttl">Intuition for how the bias arises. Treatment effect set = 0 for instructional purposes.<br>Move the <i>b</i> and <i>g</i> sliders (or drag the ✕) to see how the bias changes.</div>
     <svg id="traj3" width="100%" height="250" viewBox="0 0 720 250" preserveAspectRatio="xMidYMid meet"></svg>
-    <div class="cap">Both paths assume the treatment has no effect. In levels they diverge, so a levels DiD attributes the shaded area to the treatment effect. The shaded gap, as a fraction of the treated line’s height at the final period, equals the predicted levels-OLS bias in the box above. In logs the same paths are parallel, so log and PPML are unaffected. Move the <i>b</i> and <i>g</i> sliders (or drag the ✕) — the area changes, and vanishes whenever either is zero. This is a simplified case; the simulation below adds your <a href="#" onclick="showTab('t1');return false" style="color:var(--accent);font-weight:600">Tab 1</a> treatment effect on top.</div>
+    <div class="cap">Notes: The figure sets the treatment effect to zero to isolate the baseline-gap channel. The left panel shows outcomes in levels; the right panel shows the corresponding log-scale implication under common proportional growth. The shaded area is the component that levels DiD would attribute to treatment. The simulation below restores the <a href="#" onclick="showTab('t1');return false" style="color:var(--accent);font-weight:600">Tab 1</a> treatment effects.</div>
   </div>
-  <p class="sectext">Under common proportional growth <i>g</i>, absolute changes scale with baseline levels: a treated unit (1+<i>b</i>) times larger mechanically adds (1+<i>b</i>) times more under the no-treatment counterfactual, and a levels DiD attributes the difference to treatment. With balanced windows the bias is exactly [<i>b</i>/(1+<i>b</i>)] × [(Ḡ<sub>post</sub> − Ḡ<sub>pre</sub>)/Ḡ<sub>post</sub>], with Ḡ the window-average growth factor; in this 10+10 design the trend-scale factor is 1 − (1+<i>g</i>)<sup>−10</sup>. Either parameter at zero closes the channel: matching on baseline levels shrinks <i>b</i> toward zero, and no common growth means no trend-scale factor. The bias is separate from the treatment effect and adds to the scaled levels estimate. Proportional estimators (PPML, log specifications) impose proportional counterfactual trends and carry no bias from this channel. See <a href="#" onclick="showTab('tlit');return false" style="color:var(--accent);font-weight:600">Roth &amp; Sant’Anna (2023)</a> on when parallel trends is sensitive to functional form.</p>
+  <p class="sectext">Under common proportional growth <i>g</i>, absolute changes scale with baseline levels: a treated unit (1+<i>b</i>) times larger mechanically adds (1+<i>b</i>) times more under the no-treatment counterfactual, and a levels DiD attributes the difference to treatment. With balanced windows the bias is exactly [<i>b</i>/(1+<i>b</i>)] × [(Ḡ<sub>post</sub> − Ḡ<sub>pre</sub>)/Ḡ<sub>post</sub>], with Ḡ the window-average growth factor; in this 10+10 design the trend-scale factor is 1 − (1+<i>g</i>)<sup>−10</sup>. Either parameter at zero closes the channel: matching on baseline levels shrinks <i>b</i> toward zero, and no common growth means no trend-scale factor. The bias is separate from the treatment effect and adds to the scaled levels estimate. Proportional estimators (PPML, log specifications) impose proportional counterfactual trends and carry no bias from this channel. See <a href="#" onclick="showTab('tlit');return false" style="color:var(--accent);font-weight:600">Roth &amp; Sant’Anna (2023)</a> for more details.</p>
   </div>
 
   <div class="secblock">
@@ -276,8 +276,8 @@ section.on{display:block}
 <!-- ============ TAB REPLICATION ============ -->
 <section id="trep">
   <div class="secblock">
-  <div class="seclab">1 · What these scripts replicate</div>
-  <p class="sectext">The applet generates the data; the scripts estimate. The buttons below export the simulated panel for the current slider settings as a CSV file, and each code below (Python, R, and Julia) reads that file, runs the four specifications from Tabs 1 and 2, and prints estimates with confidence intervals. A reference panel for the default settings is bundled in the zip, and every script includes reference values for it, so you can verify your setup before swapping in your own export.</p>
+  <div class="seclab">1 · What this code replicates</div>
+  <p class="sectext">The applet generates the data; the code estimates the specifications. The buttons below export the simulated panel for the current slider settings as a CSV file. The code below (in Python, R, and Julia) reads that file, runs specifications from Tabs <a href="#" onclick="showTab('t1');return false" style="color:var(--accent);font-weight:600">1</a> and <a href="#" onclick="showTab('t3');return false" style="color:var(--accent);font-weight:600">2</a>. The zip also includes a reference panel for the default settings.</p>
   </div>
   <div class="secblock">
   <div class="seclab">2 · Download</div>
