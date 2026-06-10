@@ -1,0 +1,56 @@
+name: Insert counter line into index.html
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: insert-head-line-main
+  cancel-in-progress: false
+
+jobs:
+  update-index-html:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Insert line into <head> if missing
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          FILE="index.html"
+          LINE='<script src="https://cdn.counter.dev/script.js" data-id="1224a458-4416-4901-871e-85fc7d871117" data-utcoffset="1"></script>'
+
+          if ! grep -Fq "$LINE" "$FILE"; then
+            awk -v line="$LINE" '
+              /<\/head>/ && !done {
+                print line
+                done=1
+              }
+              { print }
+            ' "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          fi
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add index.html
+
+          if ! git diff --cached --quiet; then
+            git commit -m "Insert counter script [skip ci]"
+            git push
+          fi
