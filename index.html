@@ -108,7 +108,6 @@ section{display:none}
 section.on{display:block}
 @media(max-width:760px){.chartbox{min-width:100%}}
 </style>
-<script src="https://cdn.counter.dev/script.js" data-id="1224a458-4416-4901-871e-85fc7d871117" data-utcoffset="1"></script>
 </head>
 <body>
 <header>
@@ -291,7 +290,19 @@ section.on{display:block}
   </div>
   <div class="secblock">
   <div class="seclab">3 · Code</div>
-  <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-py','did_lab_replication.py')">&#8595;&nbsp;Python code</button>did_lab_replication.py <span style="font-weight:400;color:var(--muted)">(requires numpy, pandas, scipy, pyfixest — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-py',this)">Copy</button><div class="codebox" id="code-py">&quot;&quot;&quot;
+  <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-py','did_lab_replication.py')">&#8595;&nbsp;Python code</button>did_lab_replication.py <span style="font-weight:400;color:var(--muted)">(requires numpy, pandas, scipy, pyfixest — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-py',this)">Copy</button><div class="codebox" id="code-py"># /// script
+# requires-python = &quot;&gt;=3.9&quot;
+# dependencies = [
+#     &quot;numpy==1.23.5&quot;,
+#     &quot;pandas==1.5.3&quot;,
+#     &quot;scipy==1.10.1&quot;,
+#     &quot;pyfixest==0.50.1&quot;,
+# ]
+# ///
+# Reproducible run:  uv run did_lab_replication.py  (uv reads the PEP 723 block above and
+# builds a pinned, isolated environment). Versions are the ones this package was validated
+# against; point estimates are version-independent.
+&quot;&quot;&quot;
 DiD estimation script (Python), companion to Winkler et al. (2026):
   https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
 
@@ -307,13 +318,13 @@ Input: did_lab_panel.csv. Download it from the applet (&quot;Panel (CSV)&quot; b
 on the Replication tab; any slider settings) or use the bundled copy
 (default settings, seed 4). Reference values for the bundled panel:
   n = 32,000   sum(y) = 23,551,023
-  levels -0.03861113 [-4.4695%, -3.2527%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
+  levels -0.03861113 [-4.4694%, -3.2529%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
   w-log  -0.03704146 [-4.3714%, -3.0369%]   PPML     -0.03859994 [-4.4669%, -3.2492%]
-  (package small-sample conventions can shift CI ends in the 3rd decimal)
+  (levels CI uses the fixest-exact CRV1 correction; other CI ends can shift in the 3rd decimal across versions)
 True estimand values are properties of the DGP, not recoverable from the CSV;
 read them off the applet&#x27;s Tab 1 cards.
 
-Requires: numpy, pandas, scipy, pyfixest   (pip install numpy pandas scipy pyfixest)
+Requires: numpy, pandas, scipy, pyfixest. Best run with `uv run` (PEP 723 block at top).
 &quot;&quot;&quot;
 
 import numpy as np
@@ -375,7 +386,11 @@ psi = (score_pair / (denom * scale)
              (pm_treat_pre - pm_treat_pre.mean()) / pm_treat_pre.mean()
            - (pm_ctrl_pre  - pm_ctrl_pre.mean())  / pm_ctrl_pre.mean()
            + (pm_ctrl_post - pm_ctrl_post.mean()) / pm_ctrl_post.mean()))
-se_theta = np.sqrt((psi**2).sum()) * n_pairs / (n_pairs - 1)
+# CRV1, fixest-exact: BOTH small-sample factors multiply the VARIANCE (inside the sqrt),
+# not the SE. Nested K = period FE + D (unit FE absorbed within the pair clusters, excluded).
+K_dof = 1 + df[&quot;period&quot;].nunique()
+ssc   = (n_pairs / (n_pairs - 1)) * ((len(df) - 1) / (len(df) - K_dof))
+se_theta = np.sqrt((psi**2).sum() * ssc)
 
 ci = lambda est, s: f&quot;[{100*(est - tcrit*s):+.4f}%, {100*(est + tcrit*s):+.4f}%]&quot;
 print(f&quot;levels  {theta:+.8f}   {ci(theta, se_theta)}   (delta method)&quot;)
@@ -390,8 +405,7 @@ print(f&quot;ppml    {np.exp(d)-1:+.8f}   [{100*(np.exp(d - tcrit*se(m_ppml))-1)
 # NOTE: levels is in outcome units here (not the scaled % above), PPML is the
 # log coefficient (not exp(b)-1), and SEs use pyfixest&#x27;s default convention.
 print()
-pf.etable([m_levels, m_log, m_wlog, m_ppml], type=&quot;md&quot;)
-</div></div></details>
+pf.etable([m_levels, m_log, m_wlog, m_ppml], type=&quot;md&quot;)</div></div></details>
   <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-r','did_lab_replication.R')">&#8595;&nbsp;R code</button>did_lab_replication.R <span style="font-weight:400;color:var(--muted)">(requires fixest — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-r',this)">Copy</button><div class="codebox" id="code-r"># ==============================================================================
 # DiD estimation script (R), companion to Winkler et al. (2026):
 #   https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
@@ -408,14 +422,18 @@ pf.etable([m_levels, m_log, m_wlog, m_ppml], type=&quot;md&quot;)
 # on the Replication tab; any slider settings) or use the bundled copy
 # (default settings, seed 4). Reference values for the bundled panel:
 #   n = 32,000   sum(y) = 23,551,023
-#   levels -0.03861113 [-4.4695%, -3.2527%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
+#   levels -0.03861113 [-4.4694%, -3.2529%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
 #   w-log  -0.03704146 [-4.3714%, -3.0369%]   PPML     -0.03859994 [-4.4669%, -3.2492%]
-#   (package small-sample conventions can shift CI ends in the 3rd decimal)
+#   (levels CI uses the fixest-exact CRV1 correction; other CI ends can shift in the 3rd decimal across versions)
 # True estimand values are properties of the DGP, not recoverable from the CSV;
 # read them off the applet&#x27;s Tab 1 cards.
 #
-# Requires: fixest   (install.packages(&quot;fixest&quot;))
+# Requires: fixest. For a version-pinned run, install renv once and keep the renv::use() line below.
 # ==============================================================================
+
+# Reproducible environment: pin the exact package version (renv &gt;= 1.0).
+# Activates an isolated library; comment out to use your own installed fixest.
+renv::use(&quot;fixest@0.11.2&quot;)
 
 library(fixest)
 
@@ -461,7 +479,11 @@ psi &lt;- score_pair / (denom * scale) -
   (theta / n_pairs) * ((pm_treat_pre - mean(pm_treat_pre)) / mean(pm_treat_pre) -
                        (pm_ctrl_pre  - mean(pm_ctrl_pre))  / mean(pm_ctrl_pre)  +
                        (pm_ctrl_post - mean(pm_ctrl_post)) / mean(pm_ctrl_post))
-se_theta &lt;- sqrt(sum(psi^2)) * n_pairs / (n_pairs - 1)
+# CRV1, fixest-exact: BOTH small-sample factors multiply the VARIANCE (inside the sqrt).
+# Nested K = period FE + D (unit FE absorbed within the pair clusters, excluded).
+K_dof    &lt;- 1 + length(unique(df$period))
+ssc      &lt;- (n_pairs / (n_pairs - 1)) * ((nrow(df) - 1) / (nrow(df) - K_dof))
+se_theta &lt;- sqrt(sum(psi^2) * ssc)
 
 ci &lt;- function(est, s) sprintf(&quot;[%+.4f%%, %+.4f%%]&quot;, 100*(est - tcrit*s), 100*(est + tcrit*s))
 cat(sprintf(&quot;levels  %+.8f   %s   (delta method)\n&quot;, theta, ci(theta, se_theta)))
@@ -477,8 +499,7 @@ cat(sprintf(&quot;ppml    %+.8f   [%+.4f%%, %+.4f%%]\n&quot;, exp(d) - 1,
 # NOTE: levels is in outcome units here (not the scaled % above), PPML is the
 # log coefficient (not exp(b)-1), and SEs use fixest&#x27;s default convention.
 cat(&quot;\n&quot;)
-etable(m_levels, m_log, m_wlog, m_ppml)
-</div></div></details>
+etable(m_levels, m_log, m_wlog, m_ppml)</div></div></details>
   <details><summary class="codehead" style="cursor:pointer"><button class="dlbtn" onclick="event.preventDefault();event.stopPropagation();downloadCode('code-jl','did_lab_replication.jl')">&#8595;&nbsp;Julia code</button>did_lab_replication.jl <span style="font-weight:400;color:var(--muted)">(requires DataFrames, FixedEffectModels, GLFixedEffectModels — click to view)</span></summary><div class="codewrap"><button class="copybtn" onclick="copyCode('code-jl',this)">Copy</button><div class="codebox" id="code-jl"># ==============================================================================
 # DiD estimation script (Julia), companion to Winkler et al. (2026):
 #   https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
@@ -495,9 +516,9 @@ etable(m_levels, m_log, m_wlog, m_ppml)
 # on the Replication tab; any slider settings) or use the bundled copy
 # (default settings, seed 4). Reference values for the bundled panel:
 #   n = 32,000   sum(y) = 23,551,023
-#   levels -0.03861113 [-4.4695%, -3.2527%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
+#   levels -0.03861113 [-4.4694%, -3.2529%]   log(1+Y) +0.00760246 [-0.3962%, +1.9167%]
 #   w-log  -0.03704146 [-4.3714%, -3.0369%]   PPML     -0.03859994 [-4.4669%, -3.2492%]
-#   (package small-sample conventions can shift CI ends in the 3rd decimal)
+#   (levels CI uses the fixest-exact CRV1 correction; other CI ends can shift in the 3rd decimal across versions)
 # True estimand values are properties of the DGP, not recoverable from the CSV;
 # read them off the applet&#x27;s Tab 1 cards.
 #
@@ -562,7 +583,11 @@ psi = score_pair ./ (denom * scale) .-
       (theta / n_pairs) .* ((pm_treat_pre .- mean(pm_treat_pre)) ./ mean(pm_treat_pre) .-
                             (pm_ctrl_pre  .- mean(pm_ctrl_pre))  ./ mean(pm_ctrl_pre)  .+
                             (pm_ctrl_post .- mean(pm_ctrl_post)) ./ mean(pm_ctrl_post))
-se_theta = sqrt(sum(abs2, psi)) * n_pairs / (n_pairs - 1)
+# CRV1, fixest-exact: BOTH small-sample factors multiply the VARIANCE (inside the sqrt).
+# Nested K = period FE + D (unit FE absorbed within the pair clusters, excluded).
+K_dof    = 1 + length(unique(df.period))
+ssc      = (n_pairs / (n_pairs - 1)) * ((nrow(df) - 1) / (nrow(df) - K_dof))
+se_theta = sqrt(sum(abs2, psi) * ssc)
 
 ci(est, s) = @sprintf(&quot;[%+.4f%%, %+.4f%%]&quot;, 100*(est - tcrit*s), 100*(est + tcrit*s))
 @printf(&quot;levels  %+.8f   %s   (delta method)\n&quot;, theta, ci(theta, se_theta))
@@ -576,8 +601,7 @@ d = bof(m_ppml)
 # Standard regression table (raw coefficients).
 # NOTE: levels is in outcome units here (not the scaled % above), PPML is the
 # log coefficient (not exp(b)-1), and SEs use the package default convention.
-println(regtable(m_levels, m_log, m_wlog, m_ppml))
-</div></div></details>
+println(regtable(m_levels, m_log, m_wlog, m_ppml))</div></div></details>
   </div>
 </section>
 
@@ -761,7 +785,9 @@ function crSE(yv,Dv,w,unit,per,nU,nP){
   const sc=new Float64Array(nPair);
   for(let k=0;k<n;k++)sc[unit[k]%nPair]+=w[k]*dd[k]*(yd[k]-b*dd[k]);
   let meat=0;for(let g=0;g<nPair;g++)meat+=sc[g]*sc[g];
-  const se=Math.sqrt(meat)/den*(nPair/(nPair-1));
+  // CRV1, fixest-exact: both small-sample factors multiply the VARIANCE (inside the sqrt).
+  // Nested K = period FE + D (unit FE absorbed within the pair clusters, excluded).
+  const se=Math.sqrt(meat/(den*den)*(nPair/(nPair-1))*((n-1)/(n-1-nP)));
   return {b,se,sc,den};
 }
 function estimateWithSE(sim){
@@ -799,7 +825,7 @@ function estimateWithSE(sim){
     const psi=lv.sc[g]/(lv.den*scale)-(thetaL/nPairD)*((aG[g]-Am)/Am-(bG[g]-Bm)/Bm+(cG[g]-Cm)/Cm);
     meatD+=psi*psi;
   }
-  const seL=Math.sqrt(meatD)*(nPairD/(nPairD-1));
+  const seL=Math.sqrt(meatD*(nPairD/(nPairD-1))*((n-1)/(n-1-nPers)));  // fixest-exact CRV1 (both factors inside sqrt)
   const ly=new Float64Array(n);for(let k=0;k<n;k++)ly[k]=Math.log(1+y[k]);
   const lg=crSE(ly,D,ones,unit,per,nUnits,nPers);
   const wU=new Float64Array(nUnits),cU=new Float64Array(nUnits);
@@ -815,7 +841,7 @@ function estimateWithSE(sim){
   const scP=new Float64Array(nPair);
   for(let k=0;k<n;k++)scP[unit[k]%nPair]+=ddP[k]*(y[k]-P.lam[k]);
   let meatP=0;for(let g=0;g<nPair;g++)meatP+=scP[g]*scP[g];
-  const seP=Math.sqrt(meatP)/A*(nPair/(nPair-1));
+  const seP=Math.sqrt(meatP/(A*A)*(nPair/(nPair-1))*((n-1)/(n-1-nPers)));  // fixest-exact CRV1
   // t critical value with (pairs-1) df, matching fixest/pyfixest CI conventions
   const dfree=nUnits/2-1;
   const z=1.959963985+2.3685/dfree;
