@@ -1,9 +1,9 @@
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.12"
 # dependencies = [
-#     "numpy==1.23.5",
-#     "pandas==1.5.3",
-#     "scipy==1.10.1",
+#     "numpy==2.5.2",
+#     "pandas==3.0.5",
+#     "scipy==1.18.1",
 #     "pyfixest==0.50.1",
 # ]
 # ///
