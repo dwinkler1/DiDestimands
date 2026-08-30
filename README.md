@@ -15,11 +15,11 @@ This website provides an interactive environment to explore Difference-in-Differ
 ## Resources
 
 - 🌐 **Interactive website:** [didestimands.app](https://didestimands.app)
-- 📄 **Research paper:** [SSRN Paper](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552)
+- 📄 **Research paper:** [Quantitative Marketing and Economics (2026)](https://doi.org/10.1007/s11129-026-09312-2)
 - 📘 **Practitioner's Guide Companion:** [SSRN Companion](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6813701)
 
 ## Citation
 
 If you use this website, please cite:
 
-> Winkler, Daniel, Christian Hotz-Behofsits, Nils Wlömert, Dominik Papies, and Jura Liaukonyte. *Does TikTok Promote or Cannibalize Music Streaming? Estimands and Identification with Heavy-Tailed Outcomes*. May 23, 2024. Cornell SC Johnson College of Business Research Paper. Practitioner’s Guide Companion: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6813701. Available at SSRN: https://ssrn.com/abstract=6143552 or http://dx.doi.org/10.2139/ssrn.6143552.
+> Winkler, Daniel, Christian Hotz-Behofsits, Nils Wlömert, Dominik Papies, and Jūra Liaukonytė. *Does TikTok Promote or Cannibalize Music Streaming? Estimands and Identification with Heavy-Tailed Outcomes*. *Quantitative Marketing and Economics* (2026). https://doi.org/10.1007/s11129-026-09312-2. Practitioner’s Guide Companion: https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6813701.

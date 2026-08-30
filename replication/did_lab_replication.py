@@ -12,7 +12,7 @@
 # against; point estimates are version-independent.
 """
 DiD estimation script (Python), companion to Winkler et al. (2026):
-  https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6143552
+  https://doi.org/10.1007/s11129-026-09312-2
 
 Estimates the companion's four specifications on the exported panel, all with unit
 and period fixed effects and one Treat x Post regressor (D):
